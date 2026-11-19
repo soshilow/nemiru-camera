@@ -14,6 +14,7 @@ import Foundation
 /// - じゃんぱら: OUTCLSCODE=78 で iPhone、ORDER で並び順、販売中のみ・除外ワード非対応（iPhone ページのみ）
 /// - ソフマップ: gid=001070 でスマートフォン、product_type=USED で中古、order_by で並び順（iPhone ページのみ）
 /// - ゲオ: tree=1001 で iPhone、キーワード・除外（q_not）は Shift_JIS、sort で並び順（iPhone ページのみ）
+/// - にこスマ: キーワード検索がないので、機種ページ /iphone/<機種>/<容量> を開く。cb_sort で並び順（iPhone ページのみ）
 /// - Back Market: キーワードのみ（並び順・除外は URL で渡せない）（iPhone ページのみ）
 ///
 /// iPhone ページのカテゴリ・容量・SIMフリーは PhoneParameters を参照
@@ -52,6 +53,8 @@ struct SearchURLBuilder {
             return buildSofmapURL(query)
         case .geo:
             return buildGeoURL(query)
+        case .nicosuma:
+            return buildNicosumaURL(query)
         case .backMarket:
             return buildBackMarketURL(query)
         }
@@ -541,6 +544,34 @@ struct SearchURLBuilder {
         }
 
         return URL(string: url)
+    }
+
+    // MARK: - にこスマ
+
+    /// にこスマはキーワード検索の URL がないため、キーワード先頭の機種のページを開く。
+    /// 機種がない・扱いのない機種のときは iPhone 全体の一覧を開く（全商品が SIMフリー）
+    private static func buildNicosumaURL(_ query: Query) -> URL? {
+        var path = "/iphone"
+        if let slug = PhoneModel.detect(in: query.keyword.includeText)?.nicosumaSlug {
+            path += "/" + slug
+            // 容量のページ（2TB の絞り込みはない）
+            if let storage = query.storage, storage != .tb2 {
+                path += "/" + storage.rawValue.lowercased()
+            }
+        }
+
+        var components = URLComponents(string: "https://www.nicosuma.com\(path)")
+        switch query.sortOption {
+        case .priceAsc:
+            components?.queryItems = [URLQueryItem(name: "cb_sort", value: "price-asc")]
+        case .priceDesc:
+            components?.queryItems = [URLQueryItem(name: "cb_sort", value: "price-desc")]
+        case .newest:
+            components?.queryItems = [URLQueryItem(name: "cb_sort", value: "date-desc")] // 発売日順（入荷順はない）
+        case .recommended:
+            break // おすすめ順（サイトの初期設定）
+        }
+        return makeURL(components)
     }
 
     // MARK: - Back Market

@@ -29,7 +29,7 @@ No login, demo account, or sample files are needed.
 
 4. EXTERNAL SERVICES USED
 - openBD (https://api.openbd.jp): when an ISBN barcode is scanned, only the ISBN is sent to look up the book title. No personal data is sent.
-- Websites opened via search URL (Safari View Controller): Mercari, Rakuma, Yahoo! Flea Market, Yahoo! Auctions, Amazon.co.jp, Rakuten Ichiba, Yodobashi Camera, BicCamera, iosys, Janpara, Sofmap, GEO, Back Market. The app only opens public search pages; it does not use their APIs, log in on the user's behalf, or scrape their content.
+- Websites opened via search URL (Safari View Controller): Mercari, Rakuma, Yahoo! Flea Market, Yahoo! Auctions, Amazon.co.jp, Rakuten Ichiba, Yodobashi Camera, BicCamera, iosys, Janpara, Sofmap, GEO, nicosuma, Back Market. The app only opens public search pages; it does not use their APIs, log in on the user's behalf, or scrape their content.
 - No analytics, advertising, authentication, payment, or AI services are used. No data is sent to the developer's servers. Search history, saved searches, and settings are stored only on the device.
 
 5. REGIONAL DIFFERENCES

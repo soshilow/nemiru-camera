@@ -56,6 +56,16 @@ enum PhoneModel: String, CaseIterable, Identifiable {
     /// 検索キーワードに入れる文字列
     var keyword: String { rawValue }
 
+    /// にこスマの機種ページのパス（例：「iphone-15-pro」）。扱いのない機種は nil
+    var nicosumaSlug: String? {
+        switch self {
+        case .se2: return "iphone-se-2nd-gen"
+        case .se3: return "iphone-se-3rd-gen"
+        case .iphone17e, .iphone18Pro, .iphone18ProMax, .iphoneDuo: return nil
+        default: return rawValue.lowercased().replacingOccurrences(of: " ", with: "-")
+        }
+    }
+
     /// メニューの見出しに使う世代
     var generation: String {
         switch self {

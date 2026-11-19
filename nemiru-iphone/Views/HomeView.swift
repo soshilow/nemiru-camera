@@ -576,11 +576,30 @@ struct HomeView: View {
         .padding(.vertical, 12)
     }
 
+    /// 行のどこをタップしても1回で切り替わるよう、行全体をボタンにする
     private var simFreeRow: some View {
-        Toggle("SIMフリーのみ", isOn: $coordinator.filter.simFreeOnly)
-            .font(.system(size: 15))
+        Button {
+            coordinator.filter.simFreeOnly.toggle()
+        } label: {
+            HStack {
+                Text("SIMフリーのみ")
+                    .font(.system(size: 15))
+                    .foregroundStyle(.primary)
+
+                Spacer(minLength: 8)
+
+                Toggle("SIMフリーのみ", isOn: .constant(coordinator.filter.simFreeOnly))
+                    .labelsHidden()
+                    .allowsHitTesting(false)
+            }
             .padding(.horizontal, 16)
             .padding(.vertical, 6)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("SIMフリーのみ")
+        .accessibilityValue(coordinator.filter.simFreeOnly ? "オン" : "オフ")
+        .accessibilityAddTraits(.isToggle)
     }
 
     private var sortOptionRow: some View {
@@ -636,9 +655,15 @@ struct HomeView: View {
         } else {
             soldCaption = "相場なし・新品価格"
         }
+        // 機種名以外の語（色・除外ワードなど）を入れていても、機種・容量だけで検索するサービス
+        let isKeywordIgnored = service.searchesByModelOnly
+            && !PhoneModel.replacing(in: coordinator.filter.keyword, with: nil).isEmpty
+        let isModelUnavailable = service.searchesByModelOnly
+            && PhoneModel.detect(in: coordinator.filter.keyword)?.nicosumaSlug == nil
         let caption = [
             isSoldModeUnsupported ? soldCaption : nil,
-            isExclusionUnsupported ? "除外ワード非対応" : nil
+            isModelUnavailable ? "iPhone全体の一覧" : nil,
+            isKeywordIgnored ? "機種・容量のみで検索" : (isExclusionUnsupported ? "除外ワード非対応" : nil)
         ].compactMap { $0 }.joined(separator: "・")
 
         return Button {

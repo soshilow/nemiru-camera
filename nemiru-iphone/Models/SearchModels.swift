@@ -97,6 +97,7 @@ enum MarketplaceService: String, Codable, CaseIterable, Identifiable {
     case janpara = "じゃんぱら"
     case sofmap = "ソフマップ"
     case geo = "ゲオ"
+    case nicosuma = "にこスマ"
     case backMarket = "Back Market"
 
     var id: String { rawValue }
@@ -118,12 +119,17 @@ enum MarketplaceService: String, Codable, CaseIterable, Identifiable {
 
     /// iPhone ページだけに出すサービス（中古スマホ店）
     var isPhoneShop: Bool {
-        [.iosys, .janpara, .sofmap, .geo, .backMarket].contains(self)
+        [.iosys, .janpara, .sofmap, .geo, .nicosuma, .backMarket].contains(self)
     }
 
     /// 除外ワードを入力したとき、ボタンに「除外ワード非対応」と表示するか
     var showsExclusionWarning: Bool {
         exclusionSupport == .unsupported && (isPhoneShop || isGeneralOnly)
+    }
+
+    /// キーワードを使わず、機種・容量だけで検索するサービス（にこスマは機種ごとのページしかない）
+    var searchesByModelOnly: Bool {
+        self == .nicosuma
     }
 
     /// 常にアプリ内ブラウザで開くサービス（中古スマホ店はアプリがないか、検索URLに対応していない）
@@ -165,6 +171,8 @@ enum MarketplaceService: String, Codable, CaseIterable, Identifiable {
             return Color(red: 0.0, green: 0.30, blue: 0.60)
         case .geo:
             return Color(red: 0.0, green: 0.25, blue: 0.55)
+        case .nicosuma:
+            return Color(red: 0.95, green: 0.55, blue: 0.10)
         case .backMarket:
             return Color(red: 0.10, green: 0.10, blue: 0.10)
         }
@@ -174,7 +182,7 @@ enum MarketplaceService: String, Codable, CaseIterable, Identifiable {
     var supportsSoldSearch: Bool {
         switch self {
         case .mercari, .rakuma, .yahooFleamarket, .yahooAuctions: return true
-        case .amazon, .rakuten, .yodobashi, .bicCamera, .iosys, .janpara, .sofmap, .geo, .backMarket: return false
+        case .amazon, .rakuten, .yodobashi, .bicCamera, .iosys, .janpara, .sofmap, .geo, .nicosuma, .backMarket: return false
         }
     }
 
@@ -188,7 +196,7 @@ enum MarketplaceService: String, Codable, CaseIterable, Identifiable {
         switch self {
         case .mercari, .rakuma, .rakuten, .iosys, .geo: return .parameter
         case .yahooFleamarket, .yahooAuctions: return .inlineMinus
-        case .amazon, .yodobashi, .bicCamera, .janpara, .sofmap, .backMarket: return .unsupported
+        case .amazon, .yodobashi, .bicCamera, .janpara, .sofmap, .nicosuma, .backMarket: return .unsupported
         }
     }
 }

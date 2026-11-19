@@ -27,8 +27,8 @@ enum PhoneParameters {
             }
         }
         switch service {
-        // メルカリ・楽天市場は SIMフリーを条件で渡す。Back Market は全商品が SIMフリー
-        case .mercari, .rakuten, .backMarket:
+        // メルカリ・楽天市場は SIMフリーを条件で渡す。Back Market・にこスマは全商品が SIMフリー
+        case .mercari, .rakuten, .backMarket, .nicosuma:
             break
         default:
             if simFreeOnly {
