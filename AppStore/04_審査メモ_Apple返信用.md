@@ -10,14 +10,14 @@
 ## ■ メモ欄に貼る英文
 
 ```
-Thank you for reviewing nemiru Smartphone (nemiruスマホ). Answers to the items requested:
+Thank you for reviewing Nemiru Sumaho (ネミル スマホ). Answers to the items requested:
 
 1. SCREEN RECORDING (physical iPhone, latest iOS, starting from app launch):
 【動画URL】
 The recording shows: launching the app, typing a keyword, tapping a marketplace button to open results, scanning a barcode with the camera, saving a search, using the iPhone tab (model, storage and SIM-free filters), and the Settings tab. The app has no account registration, login, user-generated content, or paid content/features, so none of those flows exist.
 
 2. PURPOSE AND TARGET AUDIENCE
-nemiru Smartphone is a search launcher for people in Japan who buy or sell used smartphones. Prices for the same item differ between flea-market and shopping sites, and checking each site one by one is tedious. The user enters a keyword (or scans a barcode), picks a sale status and sort order, and taps a button to open that site's search results for the same keyword. On the iPhone tab the user can pick a model, storage size and SIM-free option (and save them once as "My model"); the app then limits each site's search to its smartphone category. The app itself does not sell anything and does not display prices; it only builds search URLs.
+Nemiru Sumaho is a search launcher for people in Japan who buy or sell used smartphones. Prices for the same item differ between flea-market and shopping sites, and checking each site one by one is tedious. The user enters a keyword (or scans a barcode), picks a sale status and sort order, and taps a button to open that site's search results for the same keyword. On the iPhone tab the user can pick a model, storage size and SIM-free option (and save them once as "My model"); the app then limits each site's search to its smartphone category. The app itself does not sell anything and does not display prices; it only builds search URLs.
 
 3. HOW TO USE THE MAIN FEATURES
 No login, demo account, or sample files are needed.
@@ -36,7 +36,7 @@ No login, demo account, or sample files are needed.
 The app is intended for Japan. The UI is in Japanese, and the sites listed above are Japanese services, so the app is most useful in Japan. The app's features behave the same in every region; there is no region-specific code or content. Availability and results depend on each website.
 
 6. REGULATED INDUSTRY / THIRD-PARTY MATERIAL
-The app is not in a regulated industry and contains no third-party protected content. Service and product names are used only to label search buttons and model choices; nemiru Smartphone is not affiliated with or endorsed by those companies, and the app description says so. Privacy policy: https://soshilow.github.io/nemiru-iphone/privacy.html
+The app is not in a regulated industry and contains no third-party protected content. Service and product names are used only to label search buttons and model choices; Nemiru Sumaho is not affiliated with or endorsed by those companies, and the app description says so. Privacy policy: https://soshilow.github.io/nemiru-iphone/privacy.html
 Contact: soshiro.app@gmail.com
 ```
 
