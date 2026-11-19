@@ -22,7 +22,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		064A71A4D1DCF9ADB78583DF /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		064A71A4D1DCF9ADB78583DF /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		07C22E234B09663C6658EE38 /* BarcodeScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BarcodeScannerView.swift; sourceTree = "<group>"; };
 		0AF1B496C62FA39943B23764 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		23CD9A6FC565BCE18171DD0F /* PhoneParameters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneParameters.swift; sourceTree = "<group>"; };
@@ -34,7 +34,7 @@
 		7A2237D8568E827611F6EBCF /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		A8A41F73615563BF206B6456 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		AE7F47DC77F8CE0104304B5F /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
-		BC941EDA0DD4FB55217A1353 /* FurimaKakakuCheck.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = FurimaKakakuCheck.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		BC941EDA0DD4FB55217A1353 /* FurimaKakakuCheck.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FurimaKakakuCheck.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D1004A16D9FE1CB003F8C5F6 /* SearchModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchModels.swift; sourceTree = "<group>"; };
 		E9585935BB54EF243E31AC5A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -129,11 +129,6 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1500;
-				TargetAttributes = {
-					0FD8D0F0FCD5B24A50E62A70 = {
-						DevelopmentTeam = "";
-					};
-				};
 			};
 			buildConfigurationList = 3B89FFF0D078D3F22B2872D6 /* Build configuration list for PBXProject "FurimaKakakuCheck" */;
 			developmentRegion = en;
@@ -205,7 +200,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 636MR38PL7;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = "nemiru-iphone/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -351,7 +346,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 636MR38PL7;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = "nemiru-iphone/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (

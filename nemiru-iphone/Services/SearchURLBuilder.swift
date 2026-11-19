@@ -493,10 +493,9 @@ struct SearchURLBuilder {
             items.append(URLQueryItem(name: "ORDER", value: "3"))
         case .priceDesc:
             items.append(URLQueryItem(name: "ORDER", value: "2"))
-        case .newest:
+        case .newest, .recommended:
+            // おすすめ順はないので新着順（指定しないと商品名順になる）
             items.append(URLQueryItem(name: "ORDER", value: "4"))
-        case .recommended:
-            break // サイトの初期設定
         }
 
         components?.queryItems = items
