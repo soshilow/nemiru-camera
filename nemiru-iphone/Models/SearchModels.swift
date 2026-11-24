@@ -132,6 +132,12 @@ enum MarketplaceService: String, Codable, CaseIterable, Identifiable {
         self == .nicosuma
     }
 
+    /// アプリ内ブラウザで開くときもアフィリエイト ID を付けてよいか。
+    /// Amazon アソシエイトは、アプリ内ブラウザ（WebView 等）で Amazon を表示することを禁止しているため付けない
+    var allowsAffiliateIDInAppBrowser: Bool {
+        self != .amazon
+    }
+
     /// 常にアプリ内ブラウザで開くサービス（中古スマホ店はアプリがないか、検索URLに対応していない）
     var alwaysOpensInAppBrowser: Bool {
         isPhoneShop

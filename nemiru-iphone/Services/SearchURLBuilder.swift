@@ -22,9 +22,12 @@ import Foundation
 struct SearchURLBuilder {
     /// メルカリアンバサダーの ID（メルカリの検索リンクに afid として付ける）
     static let mercariAffiliateID = "8455126641"
+    /// Amazon アソシエイトの ID（Amazon の検索リンクに tag として付ける）
+    static let amazonAssociateTag = "soshilow-22"
 
-    /// - Parameter includesAffiliateID: メルカリのリンクにアンバサダー ID を付けるか。
-    ///   「検索URLをコピー」では付けない（ID 付きのリンクが他の場所に貼られないように）
+    /// - Parameter includesAffiliateID: メルカリ・Amazon のリンクにアフィリエイト ID を付けるか。
+    ///   「検索URLをコピー」では付けない（ID 付きのリンクが他の場所に貼られないように）。
+    ///   Amazon はアプリ内ブラウザで開くときも付けない（アソシエイトの規約で、アプリ内ブラウザでの表示が禁止されているため）
     static func buildURL(
         for service: MarketplaceService,
         filter: SearchFilterState,
@@ -44,7 +47,7 @@ struct SearchURLBuilder {
         case .yahooAuctions:
             return buildYahooAuctionsURL(query)
         case .amazon:
-            return buildAmazonURL(query)
+            return buildAmazonURL(query, includesAffiliateID: includesAffiliateID)
         case .rakuten:
             return buildRakutenURL(query)
         case .yodobashi:
@@ -362,7 +365,7 @@ struct SearchURLBuilder {
 
     // MARK: - Amazon
 
-    private static func buildAmazonURL(_ query: Query) -> URL? {
+    private static func buildAmazonURL(_ query: Query, includesAffiliateID: Bool) -> URL? {
         var components = URLComponents(string: "https://www.amazon.co.jp/s")
         var items = [URLQueryItem(name: "k", value: query.keywordText(for: .unsupported))]
         if let refinement = PhoneParameters.amazonRefinement(scope: query.context.scope) {
@@ -378,6 +381,10 @@ struct SearchURLBuilder {
             items.append(URLQueryItem(name: "s", value: "relevanceblender"))
         case .newest:
             items.append(URLQueryItem(name: "s", value: "date-desc-rank"))
+        }
+
+        if includesAffiliateID {
+            items.append(URLQueryItem(name: "tag", value: amazonAssociateTag))
         }
 
         components?.queryItems = items

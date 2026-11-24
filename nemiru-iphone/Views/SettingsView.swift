@@ -64,7 +64,10 @@ struct SettingsView: View {
                 Section {
                     LabeledContent("バージョン", value: Self.appVersion)
                 } footer: {
-                    Text("メルカリの検索リンクには、メルカリアンバサダー（アフィリエイト）のIDが含まれています。")
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("メルカリの検索リンクには、メルカリアンバサダー（アフィリエイト）のIDが含まれています。")
+                        Text("Amazonのアソシエイトとして、ネミル スマホは適格販売により収入を得ています。")
+                    }
                 }
             }
             .navigationTitle("設定")

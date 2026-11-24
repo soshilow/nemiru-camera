@@ -905,20 +905,29 @@ struct HomeView: View {
             return
         }
 
-        guard let webURL = SearchURLBuilder.buildURL(for: service, filter: filter, context: searchContext) else {
+        // 売り切れ（相場）検索は、アプリに渡すと指定が効かないサービスがあるため、アプリ内ブラウザで開く。
+        // iPhone ページのカテゴリ指定はアプリで開く。
+        // ただしヤフオクはアプリにカテゴリを渡せないため、iPhone ページではアプリ内ブラウザで開く。
+        let opensInAppBrowser = inAppSafari
+            || (filter.saleStatus == .soldOut && service.opensSoldSearchInAppBrowser)
+            || (scope != .general && service == .yahooAuctions)
+            || service.alwaysOpensInAppBrowser
+
+        // Amazon はアプリ内ブラウザで開くときアソシエイトのタグを付けない
+        let includesAffiliateID = !opensInAppBrowser || service.allowsAffiliateIDInAppBrowser
+        guard let webURL = SearchURLBuilder.buildURL(
+            for: service,
+            filter: filter,
+            context: searchContext,
+            includesAffiliateID: includesAffiliateID
+        ) else {
             coordinator.showToast("検索URLの生成に失敗しました", style: .error)
             return
         }
 
         recordHistory(for: service, keyword: trimmed, filter: filter)
 
-        // 売り切れ（相場）検索は、アプリに渡すと指定が効かないサービスがあるため、アプリ内ブラウザで開く。
-        // iPhone ページのカテゴリ指定はアプリで開く。
-        // ただしヤフオクはアプリにカテゴリを渡せないため、iPhone ページではアプリ内ブラウザで開く。
-        let opensInAppBrowser = (filter.saleStatus == .soldOut && service.opensSoldSearchInAppBrowser)
-            || (scope != .general && service == .yahooAuctions)
-            || service.alwaysOpensInAppBrowser
-        if inAppSafari || opensInAppBrowser {
+        if opensInAppBrowser {
             activeSafariDestination = SafariDestination(url: webURL)
             return
         }
@@ -939,7 +948,7 @@ struct HomeView: View {
             return
         }
 
-        // コピーしたリンクには、メルカリアンバサダーの ID を付けない
+        // コピーしたリンクには、メルカリ・Amazon のアフィリエイト ID を付けない
         guard let url = SearchURLBuilder.buildURL(for: service, filter: filter, context: searchContext, includesAffiliateID: false) else {
             coordinator.showToast("検索URLの生成に失敗しました", style: .error)
             return
