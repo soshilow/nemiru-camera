@@ -20,17 +20,23 @@ import Foundation
 /// iPhone ページのカテゴリ・容量・SIMフリーは PhoneParameters を参照
 /// （ヤフオクは iPhone ページではアプリ内ブラウザで Web 版を開く）。
 struct SearchURLBuilder {
+    /// メルカリアンバサダーの ID（メルカリの検索リンクに afid として付ける）
+    static let mercariAffiliateID = "8455126641"
+
+    /// - Parameter includesAffiliateID: メルカリのリンクにアンバサダー ID を付けるか。
+    ///   「検索URLをコピー」では付けない（ID 付きのリンクが他の場所に貼られないように）
     static func buildURL(
         for service: MarketplaceService,
         filter: SearchFilterState,
-        context: SearchContext = .general
+        context: SearchContext = .general,
+        includesAffiliateID: Bool = true
     ) -> URL? {
         let query = Query(filter: filter, context: context, service: service)
         guard !query.keyword.includeTerms.isEmpty else { return nil }
 
         switch service {
         case .mercari:
-            return buildMercariURL(query)
+            return buildMercariURL(query, includesAffiliateID: includesAffiliateID)
         case .rakuma:
             return buildRakumaURL(query)
         case .yahooFleamarket:
@@ -147,42 +153,61 @@ struct SearchURLBuilder {
 
     // MARK: - メルカリ
 
-    private static func buildMercariURL(_ query: Query) -> URL? {
-        var components = URLComponents(string: "https://jp.mercari.com/search")
-        var items = [URLQueryItem(name: "keyword", value: query.keywordText(for: .parameter))]
+    /// メルカリの検索URL。メルカリアンバサダーのリンク作成ツールと同じ形にそろえる:
+    /// afid → keyword → 残りの条件をアルファベット順。空白は「+」、おすすめ順・「すべて」は指定しない。
+    /// 例: https://jp.mercari.com/search?afid=8455126641&keyword=iPhone+11&order=asc&sort=price
+    private static func buildMercariURL(_ query: Query, includesAffiliateID: Bool) -> URL? {
+        var conditions: [(name: String, value: String)] = []
 
         if !query.keyword.excludeTerms.isEmpty {
-            items.append(URLQueryItem(name: "exclude_keyword", value: query.keyword.excludeText))
+            conditions.append(("exclude_keyword", query.keyword.excludeText))
         }
 
         switch query.saleStatus {
         case .onSale:
-            items.append(URLQueryItem(name: "status", value: "on_sale"))
+            conditions.append(("status", "on_sale"))
         case .soldOut:
-            items.append(URLQueryItem(name: "status", value: "sold_out|trading"))
+            conditions.append(("status", "sold_out|trading"))
         case .all:
             break
         }
 
         switch query.sortOption {
         case .priceAsc:
-            items.append(URLQueryItem(name: "sort", value: "price"))
-            items.append(URLQueryItem(name: "order", value: "asc"))
+            conditions.append(("sort", "price"))
+            conditions.append(("order", "asc"))
         case .priceDesc:
-            items.append(URLQueryItem(name: "sort", value: "price"))
-            items.append(URLQueryItem(name: "order", value: "desc"))
-        case .recommended:
-            items.append(URLQueryItem(name: "sort", value: "score"))
-            items.append(URLQueryItem(name: "order", value: "desc"))
+            conditions.append(("sort", "price"))
+            conditions.append(("order", "desc"))
         case .newest:
-            items.append(URLQueryItem(name: "sort", value: "created_time"))
-            items.append(URLQueryItem(name: "order", value: "desc"))
+            conditions.append(("sort", "created_time"))
+            conditions.append(("order", "desc"))
+        case .recommended:
+            break // おすすめ順（メルカリの初期設定）
         }
 
-        items.append(contentsOf: PhoneParameters.mercari(scope: query.context.scope, simFreeOnly: query.simFreeOnly))
+        for item in PhoneParameters.mercari(scope: query.context.scope, simFreeOnly: query.simFreeOnly) {
+            conditions.append((item.name, item.value ?? ""))
+        }
 
-        components?.queryItems = items
-        return makeURL(components)
+        var pairs: [(name: String, value: String)] = []
+        if includesAffiliateID {
+            pairs.append(("afid", mercariAffiliateID))
+        }
+        pairs.append(("keyword", query.keywordText(for: .parameter)))
+        pairs += conditions.sorted { $0.name < $1.name }
+
+        let queryText = pairs
+            .map { encodeFormComponent($0.name) + "=" + encodeFormComponent($0.value) }
+            .joined(separator: "&")
+        return URL(string: "https://jp.mercari.com/search?" + queryText)
+    }
+
+    /// フォーム形式でエンコードする（空白は「+」、記号の「+」は %2B、日本語は UTF-8 の %XX）
+    private static func encodeFormComponent(_ value: String) -> String {
+        let unreserved = CharacterSet(charactersIn: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~ ")
+        let encoded = value.addingPercentEncoding(withAllowedCharacters: unreserved) ?? value
+        return encoded.replacingOccurrences(of: " ", with: "+")
     }
 
     // MARK: - ラクマ

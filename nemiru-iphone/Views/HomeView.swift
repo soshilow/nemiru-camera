@@ -939,7 +939,8 @@ struct HomeView: View {
             return
         }
 
-        guard let url = SearchURLBuilder.buildURL(for: service, filter: filter, context: searchContext) else {
+        // コピーしたリンクには、メルカリアンバサダーの ID を付けない
+        guard let url = SearchURLBuilder.buildURL(for: service, filter: filter, context: searchContext, includesAffiliateID: false) else {
             coordinator.showToast("検索URLの生成に失敗しました", style: .error)
             return
         }

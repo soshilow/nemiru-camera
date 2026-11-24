@@ -63,6 +63,8 @@ struct SettingsView: View {
 
                 Section {
                     LabeledContent("バージョン", value: Self.appVersion)
+                } footer: {
+                    Text("メルカリの検索リンクには、メルカリアンバサダー（アフィリエイト）のIDが含まれています。")
                 }
             }
             .navigationTitle("設定")
