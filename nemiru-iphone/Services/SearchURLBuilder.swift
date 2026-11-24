@@ -157,8 +157,8 @@ struct SearchURLBuilder {
     // MARK: - メルカリ
 
     /// メルカリの検索URL。メルカリアンバサダーのリンク作成ツールと同じ形にそろえる:
-    /// afid → keyword → 残りの条件をアルファベット順。空白は「+」、おすすめ順・「すべて」は指定しない。
-    /// 例: https://jp.mercari.com/search?afid=8455126641&keyword=iPhone+11&order=asc&sort=price
+    /// afid → keyword → 残りの条件をアルファベット順。空白は %20、おすすめ順・「すべて」は指定しない。
+    /// 例: https://jp.mercari.com/search?afid=8455126641&keyword=iPhone%2011&order=asc&sort=price
     private static func buildMercariURL(_ query: Query, includesAffiliateID: Bool) -> URL? {
         var conditions: [(name: String, value: String)] = []
 
@@ -201,16 +201,15 @@ struct SearchURLBuilder {
         pairs += conditions.sorted { $0.name < $1.name }
 
         let queryText = pairs
-            .map { encodeFormComponent($0.name) + "=" + encodeFormComponent($0.value) }
+            .map { encodeQueryComponent($0.name) + "=" + encodeQueryComponent($0.value) }
             .joined(separator: "&")
         return URL(string: "https://jp.mercari.com/search?" + queryText)
     }
 
-    /// フォーム形式でエンコードする（空白は「+」、記号の「+」は %2B、日本語は UTF-8 の %XX）
-    private static func encodeFormComponent(_ value: String) -> String {
-        let unreserved = CharacterSet(charactersIn: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~ ")
-        let encoded = value.addingPercentEncoding(withAllowedCharacters: unreserved) ?? value
-        return encoded.replacingOccurrences(of: " ", with: "+")
+    /// クエリの値をエンコードする（空白は %20、記号の「+」は %2B、日本語は UTF-8 の %XX）
+    private static func encodeQueryComponent(_ value: String) -> String {
+        let unreserved = CharacterSet(charactersIn: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~")
+        return value.addingPercentEncoding(withAllowedCharacters: unreserved) ?? value
     }
 
     // MARK: - ラクマ
