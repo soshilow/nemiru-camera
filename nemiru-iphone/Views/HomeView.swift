@@ -948,7 +948,7 @@ struct HomeView: View {
             return
         }
 
-        // コピーしたリンクには、メルカリ・Amazon のアフィリエイト ID を付けない
+        // コピーしたリンクには、メルカリ・Amazon・楽天市場のアフィリエイト ID を付けない
         guard let url = SearchURLBuilder.buildURL(for: service, filter: filter, context: searchContext, includesAffiliateID: false) else {
             coordinator.showToast("検索URLの生成に失敗しました", style: .error)
             return

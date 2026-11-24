@@ -67,6 +67,7 @@ struct SettingsView: View {
                     VStack(alignment: .leading, spacing: 6) {
                         Text("メルカリの検索リンクには、メルカリアンバサダー（アフィリエイト）のIDが含まれています。")
                         Text("Amazonのアソシエイトとして、ネミル スマホは適格販売により収入を得ています。")
+                        Text("楽天市場の検索リンクは、楽天アフィリエイトのリンク（PR）です。")
                     }
                 }
             }

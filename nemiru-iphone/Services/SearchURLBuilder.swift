@@ -24,8 +24,10 @@ struct SearchURLBuilder {
     static let mercariAffiliateID = "8455126641"
     /// Amazon アソシエイトの ID（Amazon の検索リンクに tag として付ける）
     static let amazonAssociateTag = "soshilow-22"
+    /// 楽天アフィリエイトの ID（楽天市場の検索リンクを hb.afl.rakuten.co.jp 経由にする）
+    static let rakutenAffiliateID = "59ec8aa8.7be83402.59ec8aa9.3402fcc7"
 
-    /// - Parameter includesAffiliateID: メルカリ・Amazon のリンクにアフィリエイト ID を付けるか。
+    /// - Parameter includesAffiliateID: メルカリ・Amazon・楽天市場のリンクにアフィリエイト ID を付けるか。
     ///   「検索URLをコピー」では付けない（ID 付きのリンクが他の場所に貼られないように）。
     ///   Amazon はアプリ内ブラウザで開くときも付けない（アソシエイトの規約で、アプリ内ブラウザでの表示が禁止されているため）
     static func buildURL(
@@ -49,7 +51,7 @@ struct SearchURLBuilder {
         case .amazon:
             return buildAmazonURL(query, includesAffiliateID: includesAffiliateID)
         case .rakuten:
-            return buildRakutenURL(query)
+            return buildRakutenURL(query, includesAffiliateID: includesAffiliateID)
         case .yodobashi:
             return buildYodobashiURL(query)
         case .bicCamera:
@@ -392,7 +394,7 @@ struct SearchURLBuilder {
 
     // MARK: - 楽天市場
 
-    private static func buildRakutenURL(_ query: Query) -> URL? {
+    private static func buildRakutenURL(_ query: Query, includesAffiliateID: Bool) -> URL? {
         var components = URLComponents()
         components.scheme = "https"
         components.host = "search.rakuten.co.jp"
@@ -421,7 +423,16 @@ struct SearchURLBuilder {
         }
 
         components.queryItems = items.isEmpty ? nil : items
-        return makeURL(components)
+        guard let searchURL = makeURL(components) else { return nil }
+        return includesAffiliateID ? rakutenAffiliateURL(for: searchURL) : searchURL
+    }
+
+    /// 楽天アフィリエイトのリンク（楽天の計測ページを経由して、pc に入れた検索結果へ移動する）。
+    /// 例: https://hb.afl.rakuten.co.jp/hgc/<ID>/?pc=https%3A%2F%2Fsearch.rakuten.co.jp%2Fsearch%2Fmall%2FiPhone%252017%2F
+    private static func rakutenAffiliateURL(for destination: URL) -> URL? {
+        let unreserved = CharacterSet(charactersIn: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~")
+        guard let encoded = destination.absoluteString.addingPercentEncoding(withAllowedCharacters: unreserved) else { return nil }
+        return URL(string: "https://hb.afl.rakuten.co.jp/hgc/\(rakutenAffiliateID)/?pc=\(encoded)")
     }
 
     // MARK: - ヨドバシカメラ
