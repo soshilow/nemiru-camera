@@ -14,12 +14,12 @@ import Foundation
 /// - カメラのキタムラ: /ec/list?keyword=、type=u で中古、sort=price_asc / price_desc / update_date（カメラページのみ）
 /// - フジヤカメラ: /shop/goods/search.aspx?keyword=、category=20 で中古、sort=1 / 4 / 5（カメラページのみ）
 /// - カメラのナニワ: キーワード（pb_keyword）は Shift_JIS、pb_salestype=2 で中古、sort=3 / 2 / 1（カメラページのみ）
-/// - アールイーカメラ: /category/?searchword=、ctglyid で種類、stids5=5 で中古、sort=1 / 2 / 3。
+/// - アールイーカメラ: /category/?searchword=、ctglyid=1001_1（カメラ・光学機器）、stids5=5 で中古、sort=1 / 2 / 3。
 ///   商品名のメーカーはカタカナ表記なので、メーカー名をカタカナにして送る（カメラページのみ）
 /// - ONE SCENE: /items?q=、state=on_sale / sold_out、order=price_low / price_high / hot。
 ///   カテゴリは複数指定できず、フィルムカメラの分類もないので指定しない。「-ワード」を送ると0件になるので除外ワードは送らない（カメラページのみ）
 ///
-/// カメラページの種類（カテゴリ）・中古品のみは CameraParameters を参照
+/// カメラページのカテゴリ・中古品のみは CameraParameters を参照
 /// （ヤフオクはカメラページではアプリ内ブラウザで Web 版を開く）。
 struct SearchURLBuilder {
     /// メルカリアンバサダーの ID（メルカリの検索リンクに afid として付ける）
@@ -103,25 +103,15 @@ struct SearchURLBuilder {
         let saleStatus: SaleStatus
         let sortOption: SortOption
         let context: SearchContext
-        let category: CameraCategory
         let usedOnly: Bool
 
         init(filter: SearchFilterState, context: SearchContext, service: MarketplaceService) {
             // アールイーカメラは商品名のメーカーがカタカナ（「ニコン Z6」）なので、先頭のメーカー名をカタカナにする
-            var keyword = service == .reCamera
+            let keyword = service == .reCamera
                 ? ParsedKeyword(CameraMaker.katakanaKeyword(filter.keyword))
                 : filter.parsedKeyword
-            // 種類・中古品のみ・ジャンク除外はカメラページのものだけ使う
-            let isCameraPage = context.scope == .camera
-            category = isCameraPage ? filter.cameraCategory : .all
-            usedOnly = isCameraPage && filter.usedOnly
-
-            if isCameraPage && filter.excludeJunk {
-                // 「ジャンク」を除外ワードに加える（入力済みなら重ねない）
-                if !keyword.excludeTerms.contains(where: { $0.lowercased() == "ジャンク" }) {
-                    keyword.excludeTerms.append("ジャンク")
-                }
-            }
+            // 中古品のみはカメラページのものだけ使う
+            usedOnly = context.scope == .camera && filter.usedOnly
 
             self.keyword = keyword
             saleStatus = filter.saleStatus
@@ -192,7 +182,7 @@ struct SearchURLBuilder {
             break // おすすめ順（メルカリの初期設定）
         }
 
-        if let categoryID = CameraParameters.mercariCategory(scope: query.context.scope, category: query.category) {
+        if let categoryID = CameraParameters.mercariCategory(scope: query.context.scope) {
             conditions.append(("category_id", categoryID))
         }
 
@@ -249,7 +239,7 @@ struct SearchURLBuilder {
             items.append(URLQueryItem(name: "order", value: "desc"))
         }
 
-        if let categoryID = CameraParameters.rakumaCategory(scope: query.context.scope, category: query.category) {
+        if let categoryID = CameraParameters.rakumaCategory(scope: query.context.scope) {
             items.append(URLQueryItem(name: "category_id", value: categoryID))
         }
 
@@ -290,7 +280,7 @@ struct SearchURLBuilder {
             items.append(URLQueryItem(name: "order", value: "desc"))
         }
 
-        if let categoryIDs = CameraParameters.yahooFleamarketCategoryIDs(scope: query.context.scope, category: query.category) {
+        if let categoryIDs = CameraParameters.yahooFleamarketCategoryIDs(scope: query.context.scope) {
             items.append(URLQueryItem(name: "categoryIds", value: categoryIDs))
         }
 
@@ -308,7 +298,7 @@ struct SearchURLBuilder {
         var components = URLComponents(string: base)
         var items = [URLQueryItem(name: "p", value: query.keywordText(for: .inlineMinus))]
 
-        if let category = CameraParameters.yahooAuctionsCategory(scope: query.context.scope, category: query.category) {
+        if let category = CameraParameters.yahooAuctionsCategory(scope: query.context.scope) {
             items.append(URLQueryItem(name: "auccat", value: category))
         }
 
@@ -378,7 +368,6 @@ struct SearchURLBuilder {
         var items = [URLQueryItem(name: "k", value: query.keywordText(for: .unsupported))]
         if let refinement = CameraParameters.amazonRefinement(
             scope: query.context.scope,
-            category: query.category,
             usedOnly: query.usedOnly
         ) {
             items.append(URLQueryItem(name: "rh", value: refinement))
@@ -409,7 +398,7 @@ struct SearchURLBuilder {
         var components = URLComponents()
         components.scheme = "https"
         components.host = "search.rakuten.co.jp"
-        let genrePath = CameraParameters.rakutenPath(scope: query.context.scope, category: query.category)
+        let genrePath = CameraParameters.rakutenPath(scope: query.context.scope)
         components.percentEncodedPath = "/search/mall/\(encodePathSegment(query.keywordText(for: .parameter)))/\(genrePath)"
 
         var items: [URLQueryItem] = []
@@ -612,7 +601,7 @@ struct SearchURLBuilder {
         var components = URLComponents(string: "https://re-camera-shop.com/category/")
         var items = [
             URLQueryItem(name: "searchword", value: query.keywordText(for: .unsupported)),
-            URLQueryItem(name: "ctglyid", value: CameraParameters.reCameraCategory(category: query.category))
+            URLQueryItem(name: "ctglyid", value: CameraParameters.reCameraCategory)
         ]
 
         // 中古品のチェック

@@ -14,19 +14,19 @@ Thank you for reviewing Nemiru Camera (ネミル カメラ). Answers to the item
 
 1. SCREEN RECORDING (physical iPhone, latest iOS, starting from app launch):
 【動画URL】
-The recording shows: launching the app, choosing a maker and a category (digital camera / lens / film camera), typing a model name, tapping a marketplace or used-camera-shop button to open results, switching to sold listings to check sold prices, scanning a barcode with the camera, saving a search, and the Settings tab. The app has no account registration, login, user-generated content, or paid content/features, so none of those flows exist.
+The recording shows: launching the app, choosing a maker, typing a model name, tapping a marketplace or used-camera-shop button to open results, switching to sold listings to check sold prices, scanning a barcode with the camera, saving a search, and the Settings tab. The app has no account registration, login, user-generated content, or paid content/features, so none of those flows exist.
 
 2. PURPOSE AND TARGET AUDIENCE
-Nemiru Camera is a search launcher for people in Japan who buy or sell used cameras and lenses. Prices for the same camera or lens differ between flea-market sites and used-camera shops, and checking each site one by one is tedious. On the "カメラ" tab the user picks a maker and a category, enters a model name (e.g. "Z6II" or "RF24-70mm"), and taps a button to open that site's search results. The app limits each site's search to its camera or lens category, can restrict results to used items, and can exclude junk (for-parts) listings. The app itself does not sell anything and does not display prices; it only builds search URLs.
+Nemiru Camera is a search launcher for people in Japan who buy or sell used cameras and lenses. Prices for the same camera or lens differ between flea-market sites and used-camera shops, and checking each site one by one is tedious. On the "カメラ" tab the user picks a maker, enters a model name (e.g. "Z6II" or "RF24-70mm"), and taps a button to open that site's search results. The app limits each site's search to its camera category and can restrict results to used items. The app itself does not sell anything and does not display prices; it only builds search URLs.
 
 3. HOW TO USE THE MAIN FEATURES
 No login, demo account, or sample files are needed.
-- "カメラ" tab: choose a maker from the menu (e.g. "Nikon"), pick a category (デジカメ / レンズ / フィルム), type a model name, then tap a button such as メルカリ, ヤフオク, マップカメラ or キタムラ. Results open in an in-app Safari view (SFSafariViewController); some buttons open the site's official app if it is installed.
+- "カメラ" tab: choose a maker from the menu (e.g. "Nikon"), type a model name, then tap a button such as メルカリ, ヤフオク, マップカメラ or キタムラ. Results open in an in-app Safari view (SFSafariViewController); some buttons open the site's official app if it is installed.
 - "売り切れ" (sold) mode: shows recently sold listings so the user can see actual selling prices.
 - "検索" tab: free keyword search for accessories such as tripods and bags.
 - Barcode: tap the barcode icon in the search field and allow camera access, then point the camera at a JAN/EAN barcode. Requires a real device with a camera.
 - "+ キーワードを保存": saves the keyword locally. History is also kept locally.
-- "設定" (Settings) tab: choose a default maker and category (マイ設定).
+- "設定" (Settings) tab: choose a default maker and the used-only option (マイ設定).
 
 4. EXTERNAL SERVICES USED
 - openBD (https://api.openbd.jp): when an ISBN barcode is scanned, only the ISBN is sent to look up the book title. No personal data is sent.
@@ -41,7 +41,7 @@ The app is not in a regulated industry and contains no third-party protected con
 Contact: soshiro.app@gmail.com
 
 7. DIFFERENCE FROM THE DEVELOPER'S OTHER APPS (Guideline 4.3)
-Nemiru Camera is dedicated to used cameras and lenses. Its filters (camera/lens makers, digital camera / interchangeable lens / film camera categories mapped to each site's camera categories, used-only, and junk exclusion) and its list of used-camera specialty shops (Map Camera, Kitamura, Fujiya Camera, Naniwa, RE Camera, ONE SCENE) do not exist in the developer's other apps, which target different product types and shops.
+Nemiru Camera is dedicated to used cameras and lenses. Its filters (camera and lens makers, each site's camera category, and used-only) and its list of used-camera specialty shops (Map Camera, Kitamura, Fujiya Camera, Naniwa, RE Camera, ONE SCENE) do not exist in the developer's other apps, which target different product types and shops.
 ```
 
 ---
@@ -56,7 +56,7 @@ Apple は **実機での収録** を求めています。シミュレータの�
    - カメラタブで型番を入力 → メルカリ・マップカメラ等を1〜2つタップして結果表示 → 戻る
    - バーコードアイコン → カメラ許可 → 本やパッケージのバーコードを読み取る
    - 「＋キーワードを保存」→ 保存済みが増える
-   - カメラタブでメーカー・種類を選んで検索、売り切れに切り替えて相場を見る
+   - カメラタブでメーカーを選んで検索、売り切れに切り替えて相場を見る
    - 設定タブでマイ設定を選ぶ
 5. 録画を止め、写真アプリから Mac に送る
 6. YouTube（限定公開）か Google Drive（リンクを知っている人が閲覧可）にアップロードし、URLを英文の `【動画URL】` に貼る

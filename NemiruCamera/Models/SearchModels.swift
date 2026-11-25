@@ -241,12 +241,8 @@ struct SearchFilterState: Equatable {
     var keyword: String = ""
     var saleStatus: SaleStatus = .onSale
     var sortOption: SortOption = .recommended
-    /// カメラページの種類（すべて・デジカメ・レンズ・フィルム）
-    var cameraCategory: CameraCategory = .all
     /// カメラページで中古品のみを探すか（Amazon・楽天市場・カメラ店で有効。フリマはもともと中古中心）
     var usedOnly: Bool = true
-    /// カメラページでジャンク品を除くか（「ジャンク」を除外ワードとして送る）
-    var excludeJunk: Bool = false
 
     var trimmedKeyword: String {
         keyword.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -266,7 +262,7 @@ struct SearchFilterState: Equatable {
         KeywordKey.make(keyword)
     }
 
-    /// 保存済み・履歴との重複判定に使うキー（キーワード＋そのページの種類などの条件）
+    /// 保存済み・履歴との重複判定に使うキー（キーワード＋そのページの中古品のみの条件）
     func groupKey(scope: SearchScope) -> String {
         keywordKey + "|" + (CameraSpec.make(scope: scope, filter: self) ?? "")
     }
@@ -299,7 +295,7 @@ final class SavedSearchItem {
     var lastUsedAt: Date?
     /// どのページの保存済み項目か（nil は旧データ＝「検索」ページ）
     var scopeRawValue: String?
-    /// カメラページの種類などの条件（CameraSpec 形式。nil は指定なし）
+    /// カメラページの中古品のみの条件（CameraSpec 形式。nil は指定なし）
     var sizeSpec: String?
 
     init(
@@ -355,7 +351,7 @@ final class SavedSearchItem {
         KeywordKey.make(keyword)
     }
 
-    /// 重複判定・まとめ表示に使うキー（キーワード＋種類などの条件）
+    /// 重複判定・まとめ表示に使うキー（キーワード＋中古品のみの条件）
     var groupKey: String {
         keywordKey + "|" + (sizeSpec ?? "")
     }
@@ -376,7 +372,7 @@ final class SearchHistoryItem {
     var searchedAt: Date
     /// どのページの検索履歴か（nil は旧データ＝「検索」ページ）
     var scopeRawValue: String?
-    /// カメラページの種類などの条件（CameraSpec 形式。nil は指定なし）
+    /// カメラページの中古品のみの条件（CameraSpec 形式。nil は指定なし）
     var sizeSpec: String?
 
     init(
@@ -422,7 +418,7 @@ final class SearchHistoryItem {
         KeywordKey.make(keyword)
     }
 
-    /// 重複判定・まとめ表示に使うキー（キーワード＋種類などの条件）
+    /// 重複判定・まとめ表示に使うキー（キーワード＋中古品のみの条件）
     var groupKey: String {
         keywordKey + "|" + (sizeSpec ?? "")
     }
@@ -436,10 +432,10 @@ struct SearchHistoryGroup: Identifiable {
     /// 新しい順に並んでいるので先頭が最新
     var keyword: String { items[0].keyword }
 
-    /// 種類などの条件（カメラページのみ）
+    /// 中古品のみの条件（カメラページのみ）
     var sizeSpec: String? { items[0].sizeSpec }
 
-    /// 指定したページの履歴を、同じキーワード（＋種類などの条件）ごとにまとめる（items は新しい順で渡す）
+    /// 指定したページの履歴を、同じキーワード（＋中古品のみの条件）ごとにまとめる（items は新しい順で渡す）
     static func make(from items: [SearchHistoryItem], scope: SearchScope) -> [SearchHistoryGroup] {
         var groups: [SearchHistoryGroup] = []
         var indexByKey: [String: Int] = [:]
@@ -567,7 +563,7 @@ final class SearchCoordinator {
         }
     }
 
-    /// 履歴のキーワード（カメラページは種類などの条件も）を入力する（販売状況と並び替えは今の設定のまま）
+    /// 履歴のキーワード（カメラページは中古品のみの条件も）を入力する（販売状況と並び替えは今の設定のまま）
     func applyHistory(_ group: SearchHistoryGroup) {
         filter.keyword = group.keyword
         if group.items[0].scope == .camera {

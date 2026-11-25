@@ -5,12 +5,8 @@ import Foundation
 enum AppSettingsKey {
     /// マイメーカー。CameraMaker の rawValue で保存（未設定は空文字）
     static let myMaker = "settings.myMaker"
-    /// 最初に選んでおく種類。CameraCategory の rawValue で保存（未設定は「すべて」）
-    static let myCategory = "settings.myCategory"
     /// 中古品のみを最初から選んでおくか（未設定はオン）
     static let myUsedOnly = "settings.myUsedOnly"
-    /// ジャンク品を除くを最初から選んでおくか
-    static let myExcludeJunk = "settings.myExcludeJunk"
 }
 
 // MARK: - メーカー
@@ -158,88 +154,33 @@ enum CameraMaker: String, CaseIterable, Identifiable {
     }
 }
 
-// MARK: - 種類
-
-/// カメラページで絞り込む商品の種類。各サイトのカテゴリで検索する（CameraParameters を参照）
-enum CameraCategory: String, CaseIterable, Identifiable {
-    case all
-    case digital
-    case lens
-    case film
-
-    var id: String { rawValue }
-
-    var title: String {
-        switch self {
-        case .all: return "すべて"
-        case .digital: return "デジカメ"
-        case .lens: return "レンズ"
-        case .film: return "フィルム"
-        }
-    }
-
-    /// 保存済み・履歴に表示する名前
-    var displayName: String {
-        switch self {
-        case .all: return "カメラ全般"
-        case .digital: return "デジタルカメラ"
-        case .lens: return "レンズ"
-        case .film: return "フィルムカメラ"
-        }
-    }
-}
-
 // MARK: - 保存・履歴に残す条件
 
-/// カメラページの保存済み項目と履歴に記録する条件（種類・中古品のみ・ジャンク除外）の文字列表現。
-/// 例："c:lens,nojunk"。初期状態（すべて・中古品のみ・ジャンク含む）は nil。
+/// カメラページの保存済み項目と履歴に記録する条件（中古品のみ）の文字列表現。
+/// 例："c:new"（新品も含める）。初期状態（中古品のみ）は nil。
 /// メーカーはキーワードに含まれるのでここには入れない。
+/// 古い版で保存した「種類」「ジャンク除外」の語（lens・nojunk など）は読み飛ばす。
 enum CameraSpec {
     private static let newToken = "new"
-    private static let noJunkToken = "nojunk"
 
     static func make(scope: SearchScope, filter: SearchFilterState) -> String? {
-        guard scope == .camera else { return nil }
-        var tokens: [String] = []
-        if filter.cameraCategory != .all {
-            tokens.append(filter.cameraCategory.rawValue)
-        }
-        if !filter.usedOnly {
-            tokens.append(newToken)
-        }
-        if filter.excludeJunk {
-            tokens.append(noJunkToken)
-        }
-        return tokens.isEmpty ? nil : "c:" + tokens.joined(separator: ",")
+        guard scope == .camera, !filter.usedOnly else { return nil }
+        return "c:" + newToken
     }
 
-    /// 画面表示用（例：「レンズ・ジャンク除く」）
+    /// 画面表示用（例：「新品含む」）
     static func displayText(_ spec: String?) -> String? {
-        guard let decoded = decode(spec) else { return nil }
-        let parts = [
-            decoded.category == .all ? nil : decoded.category.displayName,
-            decoded.usedOnly ? nil : "新品含む",
-            decoded.excludeJunk ? "ジャンク除く" : nil
-        ].compactMap { $0 }
-        return parts.isEmpty ? nil : parts.joined(separator: "・")
+        includesNew(spec) ? "新品含む" : nil
     }
 
     /// 保存・履歴の条件を検索条件に反映する
     static func apply(_ spec: String?, to filter: inout SearchFilterState) {
-        let decoded = decode(spec) ?? (.all, true, false)
-        filter.cameraCategory = decoded.category
-        filter.usedOnly = decoded.usedOnly
-        filter.excludeJunk = decoded.excludeJunk
+        filter.usedOnly = !includesNew(spec)
     }
 
-    private static func decode(_ spec: String?) -> (category: CameraCategory, usedOnly: Bool, excludeJunk: Bool)? {
-        guard let spec, spec.hasPrefix("c:") else { return nil }
-        let tokens = spec.dropFirst(2).split(separator: ",").map(String.init)
-        return (
-            tokens.compactMap(CameraCategory.init(rawValue:)).first ?? .all,
-            !tokens.contains(newToken),
-            tokens.contains(noJunkToken)
-        )
+    private static func includesNew(_ spec: String?) -> Bool {
+        guard let spec, spec.hasPrefix("c:") else { return false }
+        return spec.dropFirst(2).split(separator: ",").contains { $0 == newToken }
     }
 }
 
@@ -261,9 +202,7 @@ enum MyCamera {
         if let maker = CameraMaker(rawValue: defaults.string(forKey: AppSettingsKey.myMaker) ?? "") {
             filter.keyword = maker.keyword
         }
-        filter.cameraCategory = CameraCategory(rawValue: defaults.string(forKey: AppSettingsKey.myCategory) ?? "") ?? .all
         filter.usedOnly = defaults.object(forKey: AppSettingsKey.myUsedOnly) as? Bool ?? true
-        filter.excludeJunk = defaults.bool(forKey: AppSettingsKey.myExcludeJunk)
         return filter
     }
 }

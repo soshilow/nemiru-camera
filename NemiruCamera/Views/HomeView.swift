@@ -436,17 +436,7 @@ struct HomeView: View {
                     Divider()
                         .padding(.leading, 16)
 
-                    categoryRow
-
-                    Divider()
-                        .padding(.leading, 16)
-
                     toggleRow("中古品のみ", isOn: $coordinator.filter.usedOnly)
-
-                    Divider()
-                        .padding(.leading, 16)
-
-                    toggleRow("ジャンク品を除く", isOn: $coordinator.filter.excludeJunk)
 
                     Divider()
                         .padding(.leading, 16)
@@ -494,7 +484,7 @@ struct HomeView: View {
         .animation(.easeInOut(duration: 0.2), value: coordinator.filter.saleStatus)
     }
 
-    // MARK: - メーカー・種類・中古・ジャンク（カメラページ）
+    // MARK: - メーカー・中古品のみ（カメラページ）
 
     /// キーワードの先頭に入っているメーカー
     private var selectedMaker: CameraMaker? {
@@ -537,26 +527,6 @@ struct HomeView: View {
                 .background(Color(.tertiarySystemFill), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
             }
             .accessibilityLabel("メーカー")
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 10)
-    }
-
-    /// 種類（各サイトのカテゴリで絞り込む）
-    private var categoryRow: some View {
-        HStack(spacing: 12) {
-            Text("種類")
-                .font(.system(size: 15))
-
-            Spacer(minLength: 8)
-
-            Picker("種類", selection: $coordinator.filter.cameraCategory) {
-                ForEach(CameraCategory.allCases) { category in
-                    Text(category.title).tag(category)
-                }
-            }
-            .pickerStyle(.segmented)
-            .frame(maxWidth: 250)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
@@ -631,10 +601,8 @@ struct HomeView: View {
 
     private func serviceButton(for service: MarketplaceService) -> some View {
         let isSoldModeUnsupported = coordinator.filter.saleStatus == .soldOut && !service.supportsSoldSearch
-        // カメラページの「ジャンク品を除く」も除外ワードとして送る
-        let hasExclusion = !coordinator.filter.parsedKeyword.excludeTerms.isEmpty
-            || (scope == .camera && coordinator.filter.excludeJunk)
-        let isExclusionUnsupported = service.showsExclusionWarning && hasExclusion
+        let isExclusionUnsupported = service.showsExclusionWarning
+            && !coordinator.filter.parsedKeyword.excludeTerms.isEmpty
         let soldCaption: String
         if service.isCameraShop {
             soldCaption = "売り切れ検索なし"
@@ -830,7 +798,7 @@ struct HomeView: View {
         SearchContext(scope: scope)
     }
 
-    /// このページで保存・履歴に残す種類などの条件
+    /// このページで保存・履歴に残す中古品のみの条件
     private func sizeSpec(for filter: SearchFilterState) -> String? {
         CameraSpec.make(scope: scope, filter: filter)
     }
@@ -865,7 +833,7 @@ struct HomeView: View {
             return
         }
 
-        // キーワード（カメラページは種類などの条件も）を保存する。販売状況・並び替えは保存しない
+        // キーワード（カメラページは中古品のみの条件も）を保存する。販売状況・並び替えは保存しない
         let newItem = SavedSearchItem(keyword: trimmed, scope: scope, sizeSpec: sizeSpec(for: filter))
         modelContext.insert(newItem)
         try? modelContext.save()

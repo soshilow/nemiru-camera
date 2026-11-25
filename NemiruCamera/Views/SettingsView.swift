@@ -2,19 +2,10 @@ import SwiftUI
 
 struct SettingsView: View {
     @AppStorage(AppSettingsKey.myMaker) private var myMakerText = ""
-    @AppStorage(AppSettingsKey.myCategory) private var myCategoryText = CameraCategory.all.rawValue
     @AppStorage(AppSettingsKey.myUsedOnly) private var myUsedOnly = true
-    @AppStorage(AppSettingsKey.myExcludeJunk) private var myExcludeJunk = false
 
     private var myMaker: CameraMaker? {
         CameraMaker(rawValue: myMakerText)
-    }
-
-    private var myCategory: Binding<CameraCategory> {
-        Binding(
-            get: { CameraCategory(rawValue: myCategoryText) ?? .all },
-            set: { myCategoryText = $0.rawValue }
-        )
     }
 
     var body: some View {
@@ -41,18 +32,11 @@ struct SettingsView: View {
                         }
                     }
 
-                    Picker("種類", selection: myCategory) {
-                        ForEach(CameraCategory.allCases) { category in
-                            Text(category.displayName).tag(category)
-                        }
-                    }
-
                     Toggle("中古品のみ", isOn: $myUsedOnly)
-                    Toggle("ジャンク品を除く", isOn: $myExcludeJunk)
                 } header: {
                     Text("マイ設定")
                 } footer: {
-                    Text("アプリを起動したとき、カメラページで最初から選ばれた状態になります。カメラページでは、各サイトのカメラ・レンズのカテゴリで検索します。「中古品のみ」はAmazon・楽天市場・中古カメラ店で効きます（フリマ・オークションはもともと中古が中心です）。「ジャンク品を除く」は「ジャンク」を除外ワードとして送ります。")
+                    Text("アプリを起動したとき、カメラページで最初から選ばれた状態になります。カメラページでは、各サイトのカメラのカテゴリで検索します。「中古品のみ」はAmazon・楽天市場・中古カメラ店で効きます（フリマ・オークションはもともと中古が中心です）。")
                 }
 
                 Section {

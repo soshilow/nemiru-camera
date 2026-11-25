@@ -71,7 +71,6 @@ struct NemiruCameraApp: App {
                 SavedSearchItem(
                     keyword: "Nikon Z6II",
                     scope: .camera,
-                    sizeSpec: "c:digital",
                     createdAt: now.addingTimeInterval(-200)
                 ),
                 SavedSearchItem(
@@ -82,7 +81,6 @@ struct NemiruCameraApp: App {
                 SavedSearchItem(
                     keyword: "SIGMA 24-70mm F2.8 DG DN Art",
                     scope: .camera,
-                    sizeSpec: "c:lens,nojunk",
                     createdAt: now
                 )
             ]
