@@ -23,7 +23,7 @@
 
 /* Begin PBXFileReference section */
 		1027D054876B0A9094EBA5D2 /* CameraModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraModels.swift; sourceTree = "<group>"; };
-		16BB5819E99254CA96E4740B /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		16BB5819E99254CA96E4740B /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		2FF220D88B79760186DA3E97 /* SavedHistorySheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedHistorySheet.swift; sourceTree = "<group>"; };
 		35C52ED6514FB149676D0C51 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		573B89FF4F760313904EE6A9 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
@@ -33,7 +33,7 @@
 		9D3279C0C11007CD5F766A73 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		B11AF889B2F64CA4F7A1F5D0 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		B28F27BB133220FC6E2466E1 /* BarcodeScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BarcodeScannerView.swift; sourceTree = "<group>"; };
-		CC50B0B98C1B5F4ED422292B /* NemiruCamera.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = NemiruCamera.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		CC50B0B98C1B5F4ED422292B /* NemiruCamera.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NemiruCamera.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CF129C61F2C7EDBC82FE5620 /* SearchModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchModels.swift; sourceTree = "<group>"; };
 		EA4C321593EF2D57682134CB /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		F676309788E7D77B940C1E60 /* NemiruCameraApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NemiruCameraApp.swift; sourceTree = "<group>"; };
@@ -129,11 +129,6 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1500;
-				TargetAttributes = {
-					0A4EF0CF9B403F69F9B6006B = {
-						DevelopmentTeam = "";
-					};
-				};
 			};
 			buildConfigurationList = B5D2835BEEBB1A17A2157900 /* Build configuration list for PBXProject "NemiruCamera" */;
 			developmentRegion = en;
@@ -272,7 +267,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 636MR38PL7;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = NemiruCamera/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -351,7 +346,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 636MR38PL7;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = NemiruCamera/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (

@@ -22,7 +22,7 @@ targets:
         INFOPLIST_FILE: NemiruCamera/Info.plist
         PRODUCT_BUNDLE_IDENTIFIER: jp.nemiru.camera
         PRODUCT_NAME: NemiruCamera
-        DEVELOPMENT_TEAM: ""
+        DEVELOPMENT_TEAM: 636MR38PL7
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ENABLE_PREVIEWS: "YES"
 schemes:
