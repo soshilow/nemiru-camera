@@ -1,7 +1,7 @@
-// アプリアイコン（ネミル スマホ：スマホの輪郭＋虫眼鏡＋円マーク）を描いて PNG に書き出すスクリプト。
-// 元のネミルのアイコン（赤地に虫眼鏡と¥）の後ろに、一般的なスマホの形を置いたデザイン。
-// スマホは特定の機種に見えないよう、ノッチやカメラは描かない（Apple 製品の画像はアイコンに使えないため）。
-// 使い方: xcrun swiftc -o /tmp/makeicon tools/make_app_icon.swift && /tmp/makeicon nemiru-iphone/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png
+// アプリアイコン（ネミル カメラ：カメラの輪郭＋虫眼鏡＋円マーク）を描いて PNG に書き出すスクリプト。
+// ネミルのアイコン（虫眼鏡と¥）の後ろに、一般的なカメラの形を置いたデザイン。
+// 姉妹アプリ（赤）と見分けやすいよう、背景は紺色にする。カメラは特定メーカーの機種に見えない形にする。
+// 使い方: xcrun swiftc -o /tmp/makeicon tools/make_app_icon.swift && /tmp/makeicon NemiruCamera/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png
 
 import AppKit
 import CoreGraphics
@@ -15,28 +15,35 @@ let ctx = CGContext(data: nil, width: size, height: size, bitsPerComponent: 8, b
 // 左上原点に揃える
 ctx.translateBy(x: 0, y: CGFloat(size)); ctx.scaleBy(x: 1, y: -1)
 
-let red = CGColor(srgbRed: 0xE2/255, green: 0x4B/255, blue: 0x4A/255, alpha: 1)
+let red = CGColor(srgbRed: 0x1F/255, green: 0x3B/255, blue: 0x63/255, alpha: 1)  // 背景色（紺）
 let white = CGColor(srgbRed: 1, green: 1, blue: 1, alpha: 1)
 
 // 背景（角丸はiOSが付けるので四角のまま塗る）
 ctx.setFillColor(red)
 ctx.fill(CGRect(x: 0, y: 0, width: size, height: size))
 
-// スマホの輪郭（左上寄り）
+// カメラの輪郭（左上寄り）：本体＋上部の出っ張り（ファインダー部）＋レンズの円
 ctx.setStrokeColor(white)
 ctx.setLineWidth(6 * k)
-ctx.addPath(CGPath(roundedRect: CGRect(x: 20 * k, y: 14 * k, width: 50 * k, height: 86 * k),
-                   cornerWidth: 10 * k, cornerHeight: 10 * k, transform: nil))
+ctx.setLineJoin(.round)
+let body = CGMutablePath()
+body.addRoundedRect(in: CGRect(x: 10 * k, y: 30 * k, width: 76 * k, height: 50 * k), cornerWidth: 9 * k, cornerHeight: 9 * k)
+ctx.addPath(body)
 ctx.strokePath()
-// 上部の小さなスピーカー線
-ctx.setLineCap(.round)
-ctx.setLineWidth(3.6 * k)
-ctx.move(to: CGPoint(x: 39 * k, y: 23.6 * k))
-ctx.addLine(to: CGPoint(x: 51 * k, y: 23.6 * k))
+// ファインダー部（台形）
+ctx.move(to: CGPoint(x: 30 * k, y: 30 * k))
+ctx.addLine(to: CGPoint(x: 36 * k, y: 20 * k))
+ctx.addLine(to: CGPoint(x: 58 * k, y: 20 * k))
+ctx.addLine(to: CGPoint(x: 64 * k, y: 30 * k))
 ctx.strokePath()
+// シャッターボタン
+ctx.setFillColor(white)
+ctx.fill(CGRect(x: 70 * k, y: 23.5 * k, width: 9 * k, height: 4 * k))
+// 本体のレンズ
+ctx.strokeEllipse(in: CGRect(x: 19 * k, y: 41 * k, width: 23 * k, height: 23 * k))
 
-// 虫眼鏡（スマホの右下に重ねる。レンズの内側は背景色で塗って、後ろのスマホの線を隠す）
-let lens = CGPoint(x: 70, y: 66)
+// 虫眼鏡（カメラの右下に重ねる。レンズの内側は背景色で塗って、後ろのカメラの線を隠す）
+let lens = CGPoint(x: 72, y: 70)
 let radius: CGFloat = 22
 ctx.setFillColor(red)
 ctx.fillEllipse(in: CGRect(x: (lens.x - radius) * k, y: (lens.y - radius) * k, width: 2 * radius * k, height: 2 * radius * k))

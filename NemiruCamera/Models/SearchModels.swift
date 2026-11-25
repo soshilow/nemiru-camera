@@ -9,30 +9,31 @@ enum AppTab: Hashable {
 }
 
 /// 検索ページの種類。保存済み項目と検索履歴はページごとに分けて記録する。
+/// 並び順はタブの順（カメラページが先）
 enum SearchScope: String, CaseIterable, Identifiable, Codable {
+    case camera
     case general
-    case iphone
 
     var id: String { rawValue }
 
     var tabTitle: String {
         switch self {
+        case .camera: return "カメラ"
         case .general: return "検索"
-        case .iphone: return "iPhone"
         }
     }
 
     var tabSymbol: String {
         switch self {
+        case .camera: return "camera"
         case .general: return "magnifyingglass"
-        case .iphone: return "iphone"
         }
     }
 
     var placeholder: String {
         switch self {
-        case .general: return "商品名・型番・ISBNなどを入力"
-        case .iphone: return "機種名・色など（例：iPhone 15 ブルー）"
+        case .camera: return "機種名・型番（例：Z6II、RF24-70mm）"
+        case .general: return "三脚・バッグ・ストロボなど"
         }
     }
 
@@ -76,7 +77,7 @@ enum SaleStatus: String, Codable, CaseIterable, Identifiable {
 
 /// 除外ワードを各サービスへどう渡すか
 enum ExclusionSupport {
-    /// 専用パラメータで渡す（メルカリ: exclude_keyword / ラクマ: excluded_query / 楽天市場: nitem / イオシス: not / ゲオ: q_not）
+    /// 専用パラメータで渡す（メルカリ: exclude_keyword / ラクマ: excluded_query / 楽天市場: nitem）
     case parameter
     /// キーワード内の「-ワード」をそのまま解釈してくれる
     case inlineMinus
@@ -93,21 +94,19 @@ enum MarketplaceService: String, Codable, CaseIterable, Identifiable {
     case rakuten = "楽天市場"
     case yodobashi = "ヨドバシカメラ"
     case bicCamera = "ビックカメラ"
-    case iosys = "イオシス"
-    case janpara = "じゃんぱら"
-    case sofmap = "ソフマップ"
-    case geo = "ゲオ"
-    case nicosuma = "にこスマ"
-    case backMarket = "Back Market"
+    case mapCamera = "マップカメラ"
+    case kitamura = "カメラのキタムラ"
+    case fujiya = "フジヤカメラ"
+    case naniwa = "カメラのナニワ"
 
     var id: String { rawValue }
 
-    /// ページに表示するサービス。中古スマホ店は iPhone ページのみ、家電量販店は検索ページのみ
+    /// ページに表示するサービス。中古カメラ店はカメラページのみ、家電量販店は検索ページのみ
     static func services(for scope: SearchScope) -> [MarketplaceService] {
         switch scope {
         case .general:
-            return allCases.filter { !$0.isPhoneShop }
-        case .iphone:
+            return allCases.filter { !$0.isCameraShop }
+        case .camera:
             return allCases.filter { !$0.isGeneralOnly }
         }
     }
@@ -117,19 +116,14 @@ enum MarketplaceService: String, Codable, CaseIterable, Identifiable {
         self == .yodobashi || self == .bicCamera
     }
 
-    /// iPhone ページだけに出すサービス（中古スマホ店）
-    var isPhoneShop: Bool {
-        [.iosys, .janpara, .sofmap, .geo, .nicosuma, .backMarket].contains(self)
+    /// カメラページだけに出すサービス（中古カメラ店）
+    var isCameraShop: Bool {
+        [.mapCamera, .kitamura, .fujiya, .naniwa].contains(self)
     }
 
     /// 除外ワードを入力したとき、ボタンに「除外ワード非対応」と表示するか
     var showsExclusionWarning: Bool {
-        exclusionSupport == .unsupported && (isPhoneShop || isGeneralOnly)
-    }
-
-    /// キーワードを使わず、機種・容量だけで検索するサービス（にこスマは機種ごとのページしかない）
-    var searchesByModelOnly: Bool {
-        self == .nicosuma
+        exclusionSupport == .unsupported && (isCameraShop || isGeneralOnly)
     }
 
     /// アプリ内ブラウザで開くときもアフィリエイト ID を付けてよいか。
@@ -138,15 +132,17 @@ enum MarketplaceService: String, Codable, CaseIterable, Identifiable {
         self != .amazon
     }
 
-    /// 常にアプリ内ブラウザで開くサービス（中古スマホ店はアプリがないか、検索URLに対応していない）
+    /// 常にアプリ内ブラウザで開くサービス（中古カメラ店は検索URLをアプリで開けない）
     var alwaysOpensInAppBrowser: Bool {
-        isPhoneShop
+        isCameraShop
     }
 
     /// 画面に表示する名前（rawValue は保存データとの互換のため変えない）
     var displayName: String {
         switch self {
         case .yahooAuctions: return "ヤフオク"
+        case .kitamura: return "キタムラ"
+        case .naniwa: return "ナニワ"
         default: return rawValue
         }
     }
@@ -169,26 +165,22 @@ enum MarketplaceService: String, Codable, CaseIterable, Identifiable {
             return Color(red: 0.80, green: 0.0, blue: 0.10)
         case .bicCamera:
             return Color(red: 0.95, green: 0.45, blue: 0.0)
-        case .iosys:
-            return Color(red: 0.0, green: 0.45, blue: 0.75)
-        case .janpara:
-            return Color(red: 0.90, green: 0.30, blue: 0.10)
-        case .sofmap:
-            return Color(red: 0.0, green: 0.30, blue: 0.60)
-        case .geo:
-            return Color(red: 0.0, green: 0.25, blue: 0.55)
-        case .nicosuma:
-            return Color(red: 0.95, green: 0.55, blue: 0.10)
-        case .backMarket:
-            return Color(red: 0.10, green: 0.10, blue: 0.10)
+        case .mapCamera:
+            return Color(red: 0.15, green: 0.15, blue: 0.15)
+        case .kitamura:
+            return Color(red: 0.85, green: 0.10, blue: 0.15)
+        case .fujiya:
+            return Color(red: 0.0, green: 0.35, blue: 0.70)
+        case .naniwa:
+            return Color(red: 0.0, green: 0.55, blue: 0.40)
         }
     }
 
-    /// 売り切れ（相場）検索に対応しているか。Amazon・楽天市場・中古スマホ店は販売中の価格のみ。
+    /// 売り切れ（相場）検索に対応しているか。Amazon・楽天市場・カメラ店は販売中の価格のみ。
     var supportsSoldSearch: Bool {
         switch self {
         case .mercari, .rakuma, .yahooFleamarket, .yahooAuctions: return true
-        case .amazon, .rakuten, .yodobashi, .bicCamera, .iosys, .janpara, .sofmap, .geo, .nicosuma, .backMarket: return false
+        case .amazon, .rakuten, .yodobashi, .bicCamera, .mapCamera, .kitamura, .fujiya, .naniwa: return false
         }
     }
 
@@ -200,9 +192,9 @@ enum MarketplaceService: String, Codable, CaseIterable, Identifiable {
 
     var exclusionSupport: ExclusionSupport {
         switch self {
-        case .mercari, .rakuma, .rakuten, .iosys, .geo: return .parameter
+        case .mercari, .rakuma, .rakuten: return .parameter
         case .yahooFleamarket, .yahooAuctions: return .inlineMinus
-        case .amazon, .yodobashi, .bicCamera, .janpara, .sofmap, .nicosuma, .backMarket: return .unsupported
+        case .amazon, .yodobashi, .bicCamera, .mapCamera, .kitamura, .fujiya, .naniwa: return .unsupported
         }
     }
 }
@@ -242,10 +234,12 @@ struct SearchFilterState: Equatable {
     var keyword: String = ""
     var saleStatus: SaleStatus = .onSale
     var sortOption: SortOption = .recommended
-    /// iPhone ページの容量（nil は指定なし）
-    var storage: PhoneStorage?
-    /// iPhone ページで SIMフリーのみを探すか
-    var simFreeOnly: Bool = false
+    /// カメラページの種類（すべて・デジカメ・レンズ・フィルム）
+    var cameraCategory: CameraCategory = .all
+    /// カメラページで中古品のみを探すか（Amazon・楽天市場・カメラ店で有効。フリマはもともと中古中心）
+    var usedOnly: Bool = true
+    /// カメラページでジャンク品を除くか（「ジャンク」を除外ワードとして送る）
+    var excludeJunk: Bool = false
 
     var trimmedKeyword: String {
         keyword.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -265,9 +259,9 @@ struct SearchFilterState: Equatable {
         KeywordKey.make(keyword)
     }
 
-    /// 保存済み・履歴との重複判定に使うキー（キーワード＋そのページの容量・SIM条件）
+    /// 保存済み・履歴との重複判定に使うキー（キーワード＋そのページの種類などの条件）
     func groupKey(scope: SearchScope) -> String {
-        keywordKey + "|" + (PhoneSpec.make(scope: scope, filter: self) ?? "")
+        keywordKey + "|" + (CameraSpec.make(scope: scope, filter: self) ?? "")
     }
 }
 
@@ -298,7 +292,7 @@ final class SavedSearchItem {
     var lastUsedAt: Date?
     /// どのページの保存済み項目か（nil は旧データ＝「検索」ページ）
     var scopeRawValue: String?
-    /// iPhone ページの容量・SIM条件（PhoneSpec 形式。nil は指定なし）
+    /// カメラページの種類などの条件（CameraSpec 形式。nil は指定なし）
     var sizeSpec: String?
 
     init(
@@ -354,7 +348,7 @@ final class SavedSearchItem {
         KeywordKey.make(keyword)
     }
 
-    /// 重複判定・まとめ表示に使うキー（キーワード＋容量・SIM条件）
+    /// 重複判定・まとめ表示に使うキー（キーワード＋種類などの条件）
     var groupKey: String {
         keywordKey + "|" + (sizeSpec ?? "")
     }
@@ -375,7 +369,7 @@ final class SearchHistoryItem {
     var searchedAt: Date
     /// どのページの検索履歴か（nil は旧データ＝「検索」ページ）
     var scopeRawValue: String?
-    /// iPhone ページの容量・SIM条件（PhoneSpec 形式。nil は指定なし）
+    /// カメラページの種類などの条件（CameraSpec 形式。nil は指定なし）
     var sizeSpec: String?
 
     init(
@@ -421,7 +415,7 @@ final class SearchHistoryItem {
         KeywordKey.make(keyword)
     }
 
-    /// 重複判定・まとめ表示に使うキー（キーワード＋容量・SIM条件）
+    /// 重複判定・まとめ表示に使うキー（キーワード＋種類などの条件）
     var groupKey: String {
         keywordKey + "|" + (sizeSpec ?? "")
     }
@@ -435,10 +429,10 @@ struct SearchHistoryGroup: Identifiable {
     /// 新しい順に並んでいるので先頭が最新
     var keyword: String { items[0].keyword }
 
-    /// 容量・SIM条件（iPhone ページのみ）
+    /// 種類などの条件（カメラページのみ）
     var sizeSpec: String? { items[0].sizeSpec }
 
-    /// 指定したページの履歴を、同じキーワード（＋容量・SIM条件）ごとにまとめる（items は新しい順で渡す）
+    /// 指定したページの履歴を、同じキーワード（＋種類などの条件）ごとにまとめる（items は新しい順で渡す）
     static func make(from items: [SearchHistoryItem], scope: SearchScope) -> [SearchHistoryGroup] {
         var groups: [SearchHistoryGroup] = []
         var indexByKey: [String: Int] = [:]
@@ -561,16 +555,16 @@ final class SearchCoordinator {
     func applySavedItem(_ item: SavedSearchItem) {
         item.markUsed()
         filter.keyword = item.keyword
-        if item.scope == .iphone {
-            PhoneSpec.apply(item.sizeSpec, to: &filter)
+        if item.scope == .camera {
+            CameraSpec.apply(item.sizeSpec, to: &filter)
         }
     }
 
-    /// 履歴のキーワード（iPhone ページは容量・SIM条件も）を入力する（販売状況と並び替えは今の設定のまま）
+    /// 履歴のキーワード（カメラページは種類などの条件も）を入力する（販売状況と並び替えは今の設定のまま）
     func applyHistory(_ group: SearchHistoryGroup) {
         filter.keyword = group.keyword
-        if group.items[0].scope == .iphone {
-            PhoneSpec.apply(group.sizeSpec, to: &filter)
+        if group.items[0].scope == .camera {
+            CameraSpec.apply(group.sizeSpec, to: &filter)
         }
     }
 }

@@ -118,7 +118,7 @@ struct SavedHistorySheet: View {
 
                                 Spacer(minLength: 4)
 
-                                if let sizeText = PhoneSpec.displayText(item.sizeSpec) {
+                                if let sizeText = CameraSpec.displayText(item.sizeSpec) {
                                     Text(sizeText)
                                         .font(.system(size: 13))
                                         .foregroundStyle(.secondary)
@@ -171,7 +171,7 @@ struct SavedHistorySheet: View {
 
                                 Spacer(minLength: 4)
 
-                                if let sizeText = PhoneSpec.displayText(group.sizeSpec) {
+                                if let sizeText = CameraSpec.displayText(group.sizeSpec) {
                                     Text(sizeText)
                                         .font(.system(size: 13))
                                         .foregroundStyle(.secondary)

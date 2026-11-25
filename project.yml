@@ -1,4 +1,4 @@
-name: FurimaKakakuCheck
+name: NemiruCamera
 options:
   bundleIdPrefix: jp
   deploymentTarget:
@@ -9,24 +9,24 @@ settings:
     SWIFT_VERSION: "5.9"
     TARGETED_DEVICE_FAMILY: "1"
     SUPPORTS_MACCATALYST: "NO"
-    MARKETING_VERSION: "1.0.2"
-    CURRENT_PROJECT_VERSION: "3"
+    MARKETING_VERSION: "1.0.0"
+    CURRENT_PROJECT_VERSION: "1"
 targets:
-  FurimaKakakuCheck:
+  NemiruCamera:
     type: application
     platform: iOS
     sources:
-      - path: nemiru-iphone
+      - path: NemiruCamera
     settings:
       base:
-        INFOPLIST_FILE: nemiru-iphone/Info.plist
-        PRODUCT_BUNDLE_IDENTIFIER: jp.nemiru.iphone
-        PRODUCT_NAME: FurimaKakakuCheck
+        INFOPLIST_FILE: NemiruCamera/Info.plist
+        PRODUCT_BUNDLE_IDENTIFIER: jp.nemiru.camera
+        PRODUCT_NAME: NemiruCamera
         DEVELOPMENT_TEAM: ""
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ENABLE_PREVIEWS: "YES"
 schemes:
-  FurimaKakakuCheck:
+  NemiruCamera:
     build:
       targets:
-        FurimaKakakuCheck: all
+        NemiruCamera: all

@@ -2,12 +2,12 @@ import SwiftData
 import SwiftUI
 
 @main
-struct FurimaKakakuCheckApp: App {
+struct NemiruCameraApp: App {
     private let modelContainer: ModelContainer
-    @State private var selectedTab: AppTab = .page(.general)
+    @State private var selectedTab: AppTab = .page(.camera)
     /// ページごとの入力状態（キーワード・販売状況・並び替え・トースト）
     @State private var coordinators: [SearchScope: SearchCoordinator] = Dictionary(
-        uniqueKeysWithValues: SearchScope.allCases.map { ($0, SearchCoordinator(filter: MyPhone.initialFilter(for: $0))) }
+        uniqueKeysWithValues: SearchScope.allCases.map { ($0, SearchCoordinator(filter: MyCamera.initialFilter(for: $0))) }
     )
 
     init() {
@@ -65,23 +65,24 @@ struct FurimaKakakuCheckApp: App {
             let now = Date()
             let samples = [
                 SavedSearchItem(
-                    keyword: "AirPods Pro 第2世代",
+                    keyword: "トラベル三脚",
                     createdAt: now.addingTimeInterval(-300)
                 ),
                 SavedSearchItem(
-                    keyword: "Apple Watch SE",
+                    keyword: "Nikon Z6II",
+                    scope: .camera,
+                    sizeSpec: "c:digital",
                     createdAt: now.addingTimeInterval(-200)
                 ),
                 SavedSearchItem(
-                    keyword: "iPhone 15",
-                    scope: .iphone,
-                    sizeSpec: "p:128GB",
+                    keyword: "FUJIFILM X100V",
+                    scope: .camera,
                     createdAt: now.addingTimeInterval(-100)
                 ),
                 SavedSearchItem(
-                    keyword: "iPhone 16 Pro",
-                    scope: .iphone,
-                    sizeSpec: "p:256GB,sim",
+                    keyword: "SIGMA 24-70mm F2.8 DG DN Art",
+                    scope: .camera,
+                    sizeSpec: "c:lens,nojunk",
                     createdAt: now
                 )
             ]

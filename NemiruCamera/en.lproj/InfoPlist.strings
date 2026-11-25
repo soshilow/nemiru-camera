@@ -1,0 +1,3 @@
+/* App name shown on the Home Screen (English and other languages) */
+"CFBundleDisplayName" = "ネミル カメラ";
+"NSCameraUsageDescription" = "Nemiru Camera uses the camera to scan product barcodes and search for them.";

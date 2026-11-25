@@ -7,18 +7,16 @@ import Foundation
 /// - ラクマ: transaction=selling / soldout、除外は excluded_query
 /// - Yahoo!フリマ: open=1 / sold=1、キーワード内の「-ワード」で除外可
 /// - ヤフオク: 出品中は /search/search、落札相場は /closedsearch/closedsearch
-/// - 楽天市場: 除外は nitem
+/// - 楽天市場: 除外は nitem、中古品のみは used=1
 /// - ヨドバシカメラ: sorttyp で並び順、除外ワード非対応（検索ページのみ）
 /// - ビックカメラ: キーワードは Shift_JIS で送る、sort で並び順、除外ワード非対応（検索ページのみ）
-/// - イオシス: sort=l / h で価格順、除外は not、販売中のみ（iPhone ページのみ）
-/// - じゃんぱら: OUTCLSCODE=78 で iPhone、ORDER で並び順、販売中のみ・除外ワード非対応（iPhone ページのみ）
-/// - ソフマップ: gid=001070 でスマートフォン、product_type=USED で中古、order_by で並び順（iPhone ページのみ）
-/// - ゲオ: tree=1001 で iPhone、キーワード・除外（q_not）は Shift_JIS、sort で並び順（iPhone ページのみ）
-/// - にこスマ: キーワード検索がないので、機種ページ /iphone/<機種>/<容量> を開く。cb_sort で並び順（iPhone ページのみ）
-/// - Back Market: キーワードのみ（並び順・除外は URL で渡せない）（iPhone ページのみ）
+/// - マップカメラ: /search?keyword=、sell=used で中古、sort=priceasc / pricedesc / dateasc（新着）（カメラページのみ）
+/// - カメラのキタムラ: /ec/list?keyword=、type=u で中古、sort=price_asc / price_desc / update_date（カメラページのみ）
+/// - フジヤカメラ: /shop/goods/search.aspx?keyword=、category=20 で中古、sort=1 / 4 / 5（カメラページのみ）
+/// - カメラのナニワ: キーワード（pb_keyword）は Shift_JIS、pb_salestype=2 で中古、sort=3 / 2 / 1（カメラページのみ）
 ///
-/// iPhone ページのカテゴリ・容量・SIMフリーは PhoneParameters を参照
-/// （ヤフオクは iPhone ページではアプリ内ブラウザで Web 版を開く）。
+/// カメラページの種類（カテゴリ）・中古品のみは CameraParameters を参照
+/// （ヤフオクはカメラページではアプリ内ブラウザで Web 版を開く）。
 struct SearchURLBuilder {
     /// メルカリアンバサダーの ID（メルカリの検索リンクに afid として付ける）
     static let mercariAffiliateID = "8455126641"
@@ -56,18 +54,14 @@ struct SearchURLBuilder {
             return buildYodobashiURL(query)
         case .bicCamera:
             return buildBicCameraURL(query)
-        case .iosys:
-            return buildIosysURL(query)
-        case .janpara:
-            return buildJanparaURL(query)
-        case .sofmap:
-            return buildSofmapURL(query)
-        case .geo:
-            return buildGeoURL(query)
-        case .nicosuma:
-            return buildNicosumaURL(query)
-        case .backMarket:
-            return buildBackMarketURL(query)
+        case .mapCamera:
+            return buildMapCameraURL(query)
+        case .kitamura:
+            return buildKitamuraURL(query)
+        case .fujiya:
+            return buildFujiyaURL(query)
+        case .naniwa:
+            return buildNaniwaURL(query)
         }
     }
 
@@ -101,24 +95,20 @@ struct SearchURLBuilder {
         let saleStatus: SaleStatus
         let sortOption: SortOption
         let context: SearchContext
-        let storage: PhoneStorage?
-        let simFreeOnly: Bool
+        let category: CameraCategory
+        let usedOnly: Bool
 
         init(filter: SearchFilterState, context: SearchContext, service: MarketplaceService) {
             var keyword = filter.parsedKeyword
-            // 容量・SIM条件はそのページのものだけ使う
-            let isPhonePage = context.scope == .iphone
-            storage = isPhonePage ? filter.storage : nil
-            simFreeOnly = isPhonePage && filter.simFreeOnly
+            // 種類・中古品のみ・ジャンク除外はカメラページのものだけ使う
+            let isCameraPage = context.scope == .camera
+            category = isCameraPage ? filter.cameraCategory : .all
+            usedOnly = isCameraPage && filter.usedOnly
 
-            if !keyword.includeTerms.isEmpty {
-                // 条件で渡せない容量・SIMフリーはキーワードに付け足す（入力済みの語は重ねない）
-                let existing = Set(keyword.includeTerms.map { $0.lowercased() })
-                let additions = PhoneParameters.keywordAdditions(for: service, storage: storage, simFreeOnly: simFreeOnly)
-                keyword.includeTerms += additions.filter { !existing.contains($0.lowercased()) }
-
-                if PhoneParameters.prefersCompactModelName(service) {
-                    keyword = ParsedKeyword(PhoneParameters.compactModelName(keyword.inlineText))
+            if isCameraPage && filter.excludeJunk {
+                // 「ジャンク」を除外ワードに加える（入力済みなら重ねない）
+                if !keyword.excludeTerms.contains(where: { $0.lowercased() == "ジャンク" }) {
+                    keyword.excludeTerms.append("ジャンク")
                 }
             }
 
@@ -191,8 +181,8 @@ struct SearchURLBuilder {
             break // おすすめ順（メルカリの初期設定）
         }
 
-        for item in PhoneParameters.mercari(scope: query.context.scope, simFreeOnly: query.simFreeOnly) {
-            conditions.append((item.name, item.value ?? ""))
+        if let categoryID = CameraParameters.mercariCategory(scope: query.context.scope, category: query.category) {
+            conditions.append(("category_id", categoryID))
         }
 
         var pairs: [(name: String, value: String)] = []
@@ -248,7 +238,9 @@ struct SearchURLBuilder {
             items.append(URLQueryItem(name: "order", value: "desc"))
         }
 
-        items.append(contentsOf: PhoneParameters.rakuma(scope: query.context.scope))
+        if let categoryID = CameraParameters.rakumaCategory(scope: query.context.scope, category: query.category) {
+            items.append(URLQueryItem(name: "category_id", value: categoryID))
+        }
 
         components?.queryItems = items
         return makeURL(components)
@@ -287,7 +279,9 @@ struct SearchURLBuilder {
             items.append(URLQueryItem(name: "order", value: "desc"))
         }
 
-        items.append(contentsOf: PhoneParameters.yahooFleamarket(scope: query.context.scope))
+        if let categoryIDs = CameraParameters.yahooFleamarketCategoryIDs(scope: query.context.scope, category: query.category) {
+            items.append(URLQueryItem(name: "categoryIds", value: categoryIDs))
+        }
 
         components.queryItems = items.isEmpty ? nil : items
         return makeURL(components)
@@ -303,7 +297,9 @@ struct SearchURLBuilder {
         var components = URLComponents(string: base)
         var items = [URLQueryItem(name: "p", value: query.keywordText(for: .inlineMinus))]
 
-        items.append(contentsOf: PhoneParameters.yahooAuctions(scope: query.context.scope))
+        if let category = CameraParameters.yahooAuctionsCategory(scope: query.context.scope, category: query.category) {
+            items.append(URLQueryItem(name: "auccat", value: category))
+        }
 
         switch query.sortOption {
         case .priceAsc:
@@ -369,7 +365,11 @@ struct SearchURLBuilder {
     private static func buildAmazonURL(_ query: Query, includesAffiliateID: Bool) -> URL? {
         var components = URLComponents(string: "https://www.amazon.co.jp/s")
         var items = [URLQueryItem(name: "k", value: query.keywordText(for: .unsupported))]
-        if let refinement = PhoneParameters.amazonRefinement(scope: query.context.scope) {
+        if let refinement = CameraParameters.amazonRefinement(
+            scope: query.context.scope,
+            category: query.category,
+            usedOnly: query.usedOnly
+        ) {
             items.append(URLQueryItem(name: "rh", value: refinement))
         }
 
@@ -398,16 +398,15 @@ struct SearchURLBuilder {
         var components = URLComponents()
         components.scheme = "https"
         components.host = "search.rakuten.co.jp"
-        let genrePath = PhoneParameters.rakutenPath(
-            scope: query.context.scope,
-            storage: query.storage,
-            simFreeOnly: query.simFreeOnly
-        )
+        let genrePath = CameraParameters.rakutenPath(scope: query.context.scope, category: query.category)
         components.percentEncodedPath = "/search/mall/\(encodePathSegment(query.keywordText(for: .parameter)))/\(genrePath)"
 
         var items: [URLQueryItem] = []
         if !query.keyword.excludeTerms.isEmpty {
             items.append(URLQueryItem(name: "nitem", value: query.keyword.excludeText))
+        }
+        if query.usedOnly {
+            items.append(URLQueryItem(name: "used", value: "1"))
         }
 
         switch query.sortOption {
@@ -496,130 +495,103 @@ struct SearchURLBuilder {
         }.joined()
     }
 
-    // MARK: - イオシス
+    // MARK: - マップカメラ
 
-    private static func buildIosysURL(_ query: Query) -> URL? {
-        var components = URLComponents(string: "https://iosys.co.jp/items")
-        var items = [URLQueryItem(name: "q", value: query.keywordText(for: .parameter))]
+    private static func buildMapCameraURL(_ query: Query) -> URL? {
+        var components = URLComponents(string: "https://www.mapcamera.com/search")
+        var items = [URLQueryItem(name: "keyword", value: query.keywordText(for: .unsupported))]
 
-        if !query.keyword.excludeTerms.isEmpty {
-            items.append(URLQueryItem(name: "not", value: query.keyword.excludeText))
+        if query.usedOnly {
+            items.append(URLQueryItem(name: "sell", value: "used"))
         }
 
+        // 不明な値は人気順に戻されるので、サイト内のリンクと同じ値を使う
+        // （新着順は「dateasc」。マップカメラの新着中古の一覧リンクがこの値を使っている）
         switch query.sortOption {
         case .priceAsc:
-            items.append(URLQueryItem(name: "sort", value: "l"))
+            items.append(URLQueryItem(name: "sort", value: "priceasc"))
         case .priceDesc:
-            items.append(URLQueryItem(name: "sort", value: "h"))
-        case .recommended, .newest:
-            break // おすすめ順（サイトの初期設定。新着順はない）
-        }
-
-        components?.queryItems = items
-        return makeURL(components)
-    }
-
-    // MARK: - じゃんぱら
-
-    private static func buildJanparaURL(_ query: Query) -> URL? {
-        var components = URLComponents(string: "https://www.janpara.co.jp/sale/search/result/")
-        var items = [URLQueryItem(name: "KEYWORDS", value: query.keywordText(for: .unsupported))]
-
-        // 商品カテゴリ：iPhone=78
-        if query.context.scope == .iphone {
-            items.append(URLQueryItem(name: "OUTCLSCODE", value: "78"))
-        }
-
-        switch query.sortOption {
-        case .priceAsc:
-            items.append(URLQueryItem(name: "ORDER", value: "3"))
-        case .priceDesc:
-            items.append(URLQueryItem(name: "ORDER", value: "2"))
-        case .newest, .recommended:
-            // おすすめ順はないので新着順（指定しないと商品名順になる）
-            items.append(URLQueryItem(name: "ORDER", value: "4"))
-        }
-
-        components?.queryItems = items
-        return makeURL(components)
-    }
-
-    // MARK: - ソフマップ
-
-    /// ソフマップは日本語のキーワードを Shift_JIS で受け取る（UTF-8 だとエラーページになる）
-    private static func buildSofmapURL(_ query: Query) -> URL? {
-        let keyword = encodeShiftJIS(query.keywordText(for: .unsupported))
-
-        let order: String
-        switch query.sortOption {
-        case .recommended: order = "DEFAULT"
-        case .priceAsc: order = "PRICE_ASC"
-        case .priceDesc: order = "PRICE_DESC"
-        case .newest: order = "DATE_DESC" // 発売日が新しい順（入荷順はない）
-        }
-
-        // スマートフォン=001070、中古のみ
-        return URL(string: "https://www.sofmap.com/search_result.aspx?keyword=\(keyword)&gid=001070&product_type=USED&order_by=\(order)")
-    }
-
-    // MARK: - ゲオ
-
-    /// ゲオは日本語のキーワードを Shift_JIS で受け取る（UTF-8 だと検索結果が0件になる）
-    private static func buildGeoURL(_ query: Query) -> URL? {
-        var url = "https://ec.geo-online.co.jp/shop/goods/search.aspx?search.x=0"
-        url += "&keyword=" + encodeShiftJIS(query.keywordText(for: .parameter))
-
-        // 商品カテゴリ：iPhone=1001
-        if query.context.scope == .iphone {
-            url += "&tree=1001"
-        }
-        if !query.keyword.excludeTerms.isEmpty {
-            url += "&q_not=" + encodeShiftJIS(query.keyword.excludeText)
-        }
-
-        switch query.sortOption {
-        case .priceAsc: url += "&sort=sp"
-        case .priceDesc: url += "&sort=spd"
-        case .newest: url += "&sort=rd" // 発売日が新しい順（入荷順はない）
-        case .recommended: break // 人気順（サイトの初期設定）
-        }
-
-        return URL(string: url)
-    }
-
-    // MARK: - にこスマ
-
-    /// にこスマはキーワード検索の URL がないため、キーワード先頭の機種のページを開く。
-    /// 機種がない・扱いのない機種のときは iPhone 全体の一覧を開く（全商品が SIMフリー）
-    private static func buildNicosumaURL(_ query: Query) -> URL? {
-        var path = "/iphone"
-        if let slug = PhoneModel.detect(in: query.keyword.includeText)?.nicosumaSlug {
-            path += "/" + slug
-            // 容量のページ（2TB の絞り込みはない）
-            if let storage = query.storage, storage != .tb2 {
-                path += "/" + storage.rawValue.lowercased()
-            }
-        }
-
-        var components = URLComponents(string: "https://www.nicosuma.com\(path)")
-        switch query.sortOption {
-        case .priceAsc:
-            components?.queryItems = [URLQueryItem(name: "cb_sort", value: "price-asc")]
-        case .priceDesc:
-            components?.queryItems = [URLQueryItem(name: "cb_sort", value: "price-desc")]
+            items.append(URLQueryItem(name: "sort", value: "pricedesc"))
         case .newest:
-            components?.queryItems = [URLQueryItem(name: "cb_sort", value: "date-desc")] // 発売日順（入荷順はない）
+            items.append(URLQueryItem(name: "sort", value: "dateasc"))
+        case .recommended:
+            break // 人気順（サイトの初期設定）
+        }
+
+        components?.queryItems = items
+        return makeURL(components)
+    }
+
+    // MARK: - カメラのキタムラ
+
+    private static func buildKitamuraURL(_ query: Query) -> URL? {
+        var components = URLComponents(string: "https://shop.kitamura.jp/ec/list")
+        var items = [URLQueryItem(name: "keyword", value: query.keywordText(for: .unsupported))]
+
+        if query.usedOnly {
+            items.append(URLQueryItem(name: "type", value: "u"))
+        }
+
+        switch query.sortOption {
+        case .priceAsc:
+            items.append(URLQueryItem(name: "sort", value: "price_asc"))
+        case .priceDesc:
+            items.append(URLQueryItem(name: "sort", value: "price_desc"))
+        case .newest:
+            items.append(URLQueryItem(name: "sort", value: "update_date"))
+        case .recommended:
+            break // 一致度順（サイトの初期設定）
+        }
+
+        components?.queryItems = items
+        return makeURL(components)
+    }
+
+    // MARK: - フジヤカメラ
+
+    private static func buildFujiyaURL(_ query: Query) -> URL? {
+        var components = URLComponents(string: "https://www.fujiya-camera.co.jp/shop/goods/search.aspx")
+        var items = [
+            URLQueryItem(name: "search", value: "x"),
+            URLQueryItem(name: "keyword", value: query.keywordText(for: .unsupported))
+        ]
+
+        // 新品=10、中古=20
+        if query.usedOnly {
+            items.append(URLQueryItem(name: "category", value: "20"))
+        }
+
+        switch query.sortOption {
+        case .priceAsc:
+            items.append(URLQueryItem(name: "sort", value: "4"))
+        case .priceDesc:
+            items.append(URLQueryItem(name: "sort", value: "5"))
+        case .newest:
+            items.append(URLQueryItem(name: "sort", value: "1"))
         case .recommended:
             break // おすすめ順（サイトの初期設定）
         }
+
+        components?.queryItems = items
         return makeURL(components)
     }
 
-    // MARK: - Back Market
+    // MARK: - カメラのナニワ
 
-    private static func buildBackMarketURL(_ query: Query) -> URL? {
-        var components = URLComponents(string: "https://www.backmarket.co.jp/ja-jp/search")
-        components?.queryItems = [URLQueryItem(name: "q", value: query.keywordText(for: .unsupported))]
-        return makeURL(components)
+    /// ナニワは日本語のキーワードを Shift_JIS で受け取る
+    private static func buildNaniwaURL(_ query: Query) -> URL? {
+        var url = "https://cameranonaniwa.jp/shop/goods/search.aspx?search=x&pb_search=x"
+        // 買う（新品・中古）=1,2、中古のみ=2
+        url += "&pb_salestype=" + (query.usedOnly ? "2" : "1%2C2")
+        url += "&pb_keyword=" + encodeShiftJIS(query.keywordText(for: .unsupported))
+
+        switch query.sortOption {
+        case .priceAsc: url += "&sort=2"
+        case .priceDesc: url += "&sort=1"
+        case .newest: url += "&sort=3"
+        case .recommended: break // おすすめ順（サイトの初期設定）
+        }
+
+        return URL(string: url)
     }
 }

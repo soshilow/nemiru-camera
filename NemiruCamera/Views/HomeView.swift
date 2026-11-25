@@ -7,7 +7,7 @@ struct HomeView: View {
     @Environment(\.modelContext) private var modelContext
 
     @Bindable var coordinator: SearchCoordinator
-    /// このページの種類（検索・iPhone）。保存済みと履歴はページごとに分ける
+    /// このページの種類（カメラ・検索）。保存済みと履歴はページごとに分ける
     let scope: SearchScope
 
     @Query(sort: \SavedSearchItem.createdAt, order: .reverse)
@@ -340,7 +340,7 @@ struct HomeView: View {
 
                 Spacer(minLength: 4)
 
-                if let sizeText = PhoneSpec.displayText(item.sizeSpec) {
+                if let sizeText = CameraSpec.displayText(item.sizeSpec) {
                     Text(sizeText)
                         .font(.system(size: 12))
                         .foregroundStyle(.secondary)
@@ -430,18 +430,23 @@ struct HomeView: View {
             .padding(.horizontal, 4)
 
             VStack(spacing: 0) {
-                if scope == .iphone {
-                    modelRow
+                if scope == .camera {
+                    makerRow
 
                     Divider()
                         .padding(.leading, 16)
 
-                    storageRow
+                    categoryRow
 
                     Divider()
                         .padding(.leading, 16)
 
-                    simFreeRow
+                    toggleRow("中古品のみ", isOn: $coordinator.filter.usedOnly)
+
+                    Divider()
+                        .padding(.leading, 16)
+
+                    toggleRow("ジャンク品を除く", isOn: $coordinator.filter.excludeJunk)
 
                     Divider()
                         .padding(.leading, 16)
@@ -489,39 +494,39 @@ struct HomeView: View {
         .animation(.easeInOut(duration: 0.2), value: coordinator.filter.saleStatus)
     }
 
-    // MARK: - 機種・容量・SIM（iPhone ページ）
+    // MARK: - メーカー・種類・中古・ジャンク（カメラページ）
 
-    /// キーワードの先頭に入っている機種
-    private var selectedModel: PhoneModel? {
-        PhoneModel.detect(in: coordinator.filter.keyword)
+    /// キーワードの先頭に入っているメーカー
+    private var selectedMaker: CameraMaker? {
+        CameraMaker.detect(in: coordinator.filter.keyword)
     }
 
-    /// 機種（1つ選ぶ）。選ぶとキーワードの先頭に機種名が入る
-    private var modelRow: some View {
+    /// メーカー（1つ選ぶ）。選ぶとキーワードの先頭にメーカー名が入る
+    private var makerRow: some View {
         HStack(spacing: 12) {
-            Text("機種")
+            Text("メーカー")
                 .font(.system(size: 15))
 
             Spacer(minLength: 8)
 
             Menu {
                 Button("指定なし") {
-                    coordinator.filter.keyword = PhoneModel.replacing(in: coordinator.filter.keyword, with: nil)
+                    coordinator.filter.keyword = CameraMaker.replacing(in: coordinator.filter.keyword, with: nil)
                 }
-                ForEach(PhoneModel.generations, id: \.title) { generation in
-                    Section(generation.title) {
-                        ForEach(generation.models) { model in
-                            Button(model.keyword) {
-                                coordinator.filter.keyword = PhoneModel.replacing(in: coordinator.filter.keyword, with: model)
+                ForEach(CameraMaker.groups, id: \.title) { group in
+                    Section(group.title) {
+                        ForEach(group.makers) { maker in
+                            Button(maker.menuTitle) {
+                                coordinator.filter.keyword = CameraMaker.replacing(in: coordinator.filter.keyword, with: maker)
                             }
                         }
                     }
                 }
             } label: {
                 HStack(spacing: 4) {
-                    Text(selectedModel?.keyword ?? "機種を選択")
+                    Text(selectedMaker?.keyword ?? "メーカーを選択")
                         .font(.system(size: 15))
-                        .foregroundStyle(selectedModel == nil ? Color.secondary : Color.primary)
+                        .foregroundStyle(selectedMaker == nil ? Color.secondary : Color.primary)
                         .lineLimit(1)
                     Image(systemName: "chevron.up.chevron.down")
                         .font(.system(size: 11, weight: .semibold))
@@ -531,64 +536,45 @@ struct HomeView: View {
                 .padding(.vertical, 7)
                 .background(Color(.tertiarySystemFill), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
             }
-            .accessibilityLabel("機種")
+            .accessibilityLabel("メーカー")
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
     }
 
-    /// 容量（1つ選ぶ。選択中をもう一度タップすると解除）
-    private var storageRow: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack {
-                Text("容量")
-                    .font(.system(size: 15))
+    /// 種類（各サイトのカテゴリで絞り込む）
+    private var categoryRow: some View {
+        HStack(spacing: 12) {
+            Text("種類")
+                .font(.system(size: 15))
 
-                Spacer(minLength: 8)
+            Spacer(minLength: 8)
 
-                if coordinator.filter.storage != nil {
-                    Button("クリア") {
-                        coordinator.filter.storage = nil
-                    }
-                    .font(.footnote.weight(.medium))
+            Picker("種類", selection: $coordinator.filter.cameraCategory) {
+                ForEach(CameraCategory.allCases) { category in
+                    Text(category.title).tag(category)
                 }
             }
-
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 3), spacing: 8) {
-                ForEach(PhoneStorage.allCases) { storage in
-                    let isSelected = coordinator.filter.storage == storage
-                    Button {
-                        coordinator.filter.storage = isSelected ? nil : storage
-                    } label: {
-                        Text(storage.rawValue)
-                            .font(.system(size: 13, weight: .medium))
-                            .foregroundStyle(isSelected ? Color.white : Color.primary)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 7)
-                            .background(isSelected ? Color.blue : Color(.tertiarySystemFill), in: Capsule())
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityAddTraits(isSelected ? .isSelected : [])
-                }
-            }
+            .pickerStyle(.segmented)
+            .frame(maxWidth: 250)
         }
         .padding(.horizontal, 16)
-        .padding(.vertical, 12)
+        .padding(.vertical, 10)
     }
 
     /// 行のどこをタップしても1回で切り替わるよう、行全体をボタンにする
-    private var simFreeRow: some View {
+    private func toggleRow(_ title: String, isOn: Binding<Bool>) -> some View {
         Button {
-            coordinator.filter.simFreeOnly.toggle()
+            isOn.wrappedValue.toggle()
         } label: {
             HStack {
-                Text("SIMフリーのみ")
+                Text(title)
                     .font(.system(size: 15))
                     .foregroundStyle(.primary)
 
                 Spacer(minLength: 8)
 
-                Toggle("SIMフリーのみ", isOn: .constant(coordinator.filter.simFreeOnly))
+                Toggle(title, isOn: .constant(isOn.wrappedValue))
                     .labelsHidden()
                     .allowsHitTesting(false)
             }
@@ -597,8 +583,8 @@ struct HomeView: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .accessibilityLabel("SIMフリーのみ")
-        .accessibilityValue(coordinator.filter.simFreeOnly ? "オン" : "オフ")
+        .accessibilityLabel(title)
+        .accessibilityValue(isOn.wrappedValue ? "オン" : "オフ")
         .accessibilityAddTraits(.isToggle)
     }
 
@@ -622,7 +608,7 @@ struct HomeView: View {
         .padding(.vertical, 10)
     }
 
-    // MARK: - ④ サービス起動グリッド（検索ページは8社、iPhone ページは10社）
+    // MARK: - ④ サービス起動グリッド（検索ページは8社、カメラページは10社）
 
     private var serviceGridSection: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -645,25 +631,21 @@ struct HomeView: View {
 
     private func serviceButton(for service: MarketplaceService) -> some View {
         let isSoldModeUnsupported = coordinator.filter.saleStatus == .soldOut && !service.supportsSoldSearch
-        let isExclusionUnsupported = service.showsExclusionWarning
-            && !coordinator.filter.parsedKeyword.excludeTerms.isEmpty
+        // カメラページの「ジャンク品を除く」も除外ワードとして送る
+        let hasExclusion = !coordinator.filter.parsedKeyword.excludeTerms.isEmpty
+            || (scope == .camera && coordinator.filter.excludeJunk)
+        let isExclusionUnsupported = service.showsExclusionWarning && hasExclusion
         let soldCaption: String
-        if service.isPhoneShop {
+        if service.isCameraShop {
             soldCaption = "売り切れ検索なし"
-        } else if scope == .iphone && service == .amazon {
+        } else if scope == .camera && (service == .amazon || service == .rakuten) {
             soldCaption = "相場なし・販売価格"
         } else {
             soldCaption = "相場なし・新品価格"
         }
-        // 機種名以外の語（色・除外ワードなど）を入れていても、機種・容量だけで検索するサービス
-        let isKeywordIgnored = service.searchesByModelOnly
-            && !PhoneModel.replacing(in: coordinator.filter.keyword, with: nil).isEmpty
-        let isModelUnavailable = service.searchesByModelOnly
-            && PhoneModel.detect(in: coordinator.filter.keyword)?.nicosumaSlug == nil
         let caption = [
             isSoldModeUnsupported ? soldCaption : nil,
-            isModelUnavailable ? "iPhone全体の一覧" : nil,
-            isKeywordIgnored ? "機種・容量のみで検索" : (isExclusionUnsupported ? "除外ワード非対応" : nil)
+            isExclusionUnsupported ? "除外ワード非対応" : nil
         ].compactMap { $0 }.joined(separator: "・")
 
         return Button {
@@ -815,7 +797,7 @@ struct HomeView: View {
 
                 Spacer(minLength: 4)
 
-                if let sizeText = PhoneSpec.displayText(group.sizeSpec) {
+                if let sizeText = CameraSpec.displayText(group.sizeSpec) {
                     Text(sizeText)
                         .font(.system(size: 12))
                         .foregroundStyle(.secondary)
@@ -848,9 +830,9 @@ struct HomeView: View {
         SearchContext(scope: scope)
     }
 
-    /// このページで保存・履歴に残す容量・SIM条件
+    /// このページで保存・履歴に残す種類などの条件
     private func sizeSpec(for filter: SearchFilterState) -> String? {
-        PhoneSpec.make(scope: scope, filter: filter)
+        CameraSpec.make(scope: scope, filter: filter)
     }
 
     private func performPullReset() {
@@ -883,7 +865,7 @@ struct HomeView: View {
             return
         }
 
-        // キーワード（iPhone ページは容量・SIM条件も）を保存する。販売状況・並び替えは保存しない
+        // キーワード（カメラページは種類などの条件も）を保存する。販売状況・並び替えは保存しない
         let newItem = SavedSearchItem(keyword: trimmed, scope: scope, sizeSpec: sizeSpec(for: filter))
         modelContext.insert(newItem)
         try? modelContext.save()
@@ -906,8 +888,8 @@ struct HomeView: View {
         }
 
         // 売り切れ（相場）検索は、アプリに渡すと指定が効かないサービスがあるため、アプリ内ブラウザで開く。
-        // iPhone ページのカテゴリ指定はアプリで開く。
-        // ただしヤフオクはアプリにカテゴリを渡せないため、iPhone ページではアプリ内ブラウザで開く。
+        // カメラページのカテゴリ指定はアプリで開く。
+        // ただしヤフオクはアプリにカテゴリを渡せないため、カメラページではアプリ内ブラウザで開く。
         let opensInAppBrowser = inAppSafari
             || (filter.saleStatus == .soldOut && service.opensSoldSearchInAppBrowser)
             || (scope != .general && service == .yahooAuctions)
