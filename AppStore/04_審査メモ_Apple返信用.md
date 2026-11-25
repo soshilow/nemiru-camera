@@ -30,7 +30,7 @@ No login, demo account, or sample files are needed.
 
 4. EXTERNAL SERVICES USED
 - openBD (https://api.openbd.jp): when an ISBN barcode is scanned, only the ISBN is sent to look up the book title. No personal data is sent.
-- Websites opened via search URL (Safari View Controller): Mercari, Rakuma, Yahoo! Flea Market, Yahoo! Auctions, Amazon.co.jp, Rakuten Ichiba, Yodobashi Camera, BicCamera, Map Camera, Camera no Kitamura, Fujiya Camera, Camera no Naniwa. The app only opens public search pages; it does not use their APIs, log in on the user's behalf, or scrape their content.
+- Websites opened via search URL (Safari View Controller): Mercari, Rakuma, Yahoo! Flea Market, Yahoo! Auctions, Amazon.co.jp, Rakuten Ichiba, Yodobashi Camera, BicCamera, Map Camera, Camera no Kitamura, Fujiya Camera, Camera no Naniwa, RE Camera, ONE SCENE. The app only opens public search pages; it does not use their APIs, log in on the user's behalf, or scrape their content.
 - No analytics, advertising, authentication, payment, or AI services are used. No data is sent to the developer's servers. Search history, saved searches, and settings are stored only on the device.
 
 5. REGIONAL DIFFERENCES
@@ -41,7 +41,7 @@ The app is not in a regulated industry and contains no third-party protected con
 Contact: soshiro.app@gmail.com
 
 7. DIFFERENCE FROM THE DEVELOPER'S OTHER APPS (Guideline 4.3)
-Nemiru Camera is dedicated to used cameras and lenses. Its filters (camera/lens makers, digital camera / interchangeable lens / film camera categories mapped to each site's camera categories, used-only, and junk exclusion) and its list of used-camera specialty shops (Map Camera, Kitamura, Fujiya Camera, Naniwa) do not exist in the developer's other apps, which target different product types and shops.
+Nemiru Camera is dedicated to used cameras and lenses. Its filters (camera/lens makers, digital camera / interchangeable lens / film camera categories mapped to each site's camera categories, used-only, and junk exclusion) and its list of used-camera specialty shops (Map Camera, Kitamura, Fujiya Camera, Naniwa, RE Camera, ONE SCENE) do not exist in the developer's other apps, which target different product types and shops.
 ```
 
 ---

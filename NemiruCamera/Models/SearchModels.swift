@@ -98,6 +98,8 @@ enum MarketplaceService: String, Codable, CaseIterable, Identifiable {
     case kitamura = "カメラのキタムラ"
     case fujiya = "フジヤカメラ"
     case naniwa = "カメラのナニワ"
+    case reCamera = "アールイーカメラ"
+    case oneScene = "ONE SCENE"
 
     var id: String { rawValue }
 
@@ -118,7 +120,7 @@ enum MarketplaceService: String, Codable, CaseIterable, Identifiable {
 
     /// カメラページだけに出すサービス（中古カメラ店）
     var isCameraShop: Bool {
-        [.mapCamera, .kitamura, .fujiya, .naniwa].contains(self)
+        [.mapCamera, .kitamura, .fujiya, .naniwa, .reCamera, .oneScene].contains(self)
     }
 
     /// 除外ワードを入力したとき、ボタンに「除外ワード非対応」と表示するか
@@ -173,14 +175,19 @@ enum MarketplaceService: String, Codable, CaseIterable, Identifiable {
             return Color(red: 0.0, green: 0.35, blue: 0.70)
         case .naniwa:
             return Color(red: 0.0, green: 0.55, blue: 0.40)
+        case .reCamera:
+            return Color(red: 0.55, green: 0.35, blue: 0.20)
+        case .oneScene:
+            return Color(red: 0.0, green: 0.60, blue: 0.70)
         }
     }
 
-    /// 売り切れ（相場）検索に対応しているか。Amazon・楽天市場・カメラ店は販売中の価格のみ。
+    /// 売り切れ（相場）検索に対応しているか。Amazon・楽天市場・カメラ店は販売中の価格のみ
+    /// （ONE SCENE は個人の出品を扱うので、売り切れも検索できる）。
     var supportsSoldSearch: Bool {
         switch self {
-        case .mercari, .rakuma, .yahooFleamarket, .yahooAuctions: return true
-        case .amazon, .rakuten, .yodobashi, .bicCamera, .mapCamera, .kitamura, .fujiya, .naniwa: return false
+        case .mercari, .rakuma, .yahooFleamarket, .yahooAuctions, .oneScene: return true
+        case .amazon, .rakuten, .yodobashi, .bicCamera, .mapCamera, .kitamura, .fujiya, .naniwa, .reCamera: return false
         }
     }
 
@@ -194,7 +201,7 @@ enum MarketplaceService: String, Codable, CaseIterable, Identifiable {
         switch self {
         case .mercari, .rakuma, .rakuten: return .parameter
         case .yahooFleamarket, .yahooAuctions: return .inlineMinus
-        case .amazon, .yodobashi, .bicCamera, .mapCamera, .kitamura, .fujiya, .naniwa: return .unsupported
+        case .amazon, .yodobashi, .bicCamera, .mapCamera, .kitamura, .fujiya, .naniwa, .reCamera, .oneScene: return .unsupported
         }
     }
 }

@@ -73,6 +73,42 @@ enum CameraMaker: String, CaseIterable, Identifiable {
         }
     }
 
+    /// カタカナ・漢字の表記。商品名をカタカナで書く店（アールイーカメラ）では、
+    /// 英字よりこちらのほうが多くヒットする（例：TAMRON 0件 / タムロン 56件）。
+    /// VILTROX は英字のほうが多いので英字のまま
+    var katakanaName: String {
+        switch self {
+        case .canon: return "キヤノン"
+        case .nikon: return "ニコン"
+        case .sony: return "ソニー"
+        case .fujifilm: return "富士フイルム"
+        case .panasonic: return "パナソニック"
+        case .omSystem: return "OMシステム"
+        case .olympus: return "オリンパス"
+        case .pentax: return "ペンタックス"
+        case .ricoh: return "リコー"
+        case .leica: return "ライカ"
+        case .hasselblad: return "ハッセルブラッド"
+        case .sigma: return "シグマ"
+        case .tamron: return "タムロン"
+        case .tokina: return "トキナー"
+        case .voigtlander: return "フォクトレンダー"
+        case .zeiss: return "ツァイス"
+        case .ttartisan: return "銘匠光学"
+        case .viltrox: return "VILTROX"
+        case .minolta: return "ミノルタ"
+        case .contax: return "コンタックス"
+        case .mamiya: return "マミヤ"
+        }
+    }
+
+    /// キーワードの先頭のメーカー名をカタカナ表記にする（メーカー名がなければそのまま）
+    static func katakanaKeyword(_ keyword: String) -> String {
+        guard let maker = detect(in: keyword) else { return keyword }
+        let rest = replacing(in: keyword, with: nil)
+        return rest.isEmpty ? maker.katakanaName : maker.katakanaName + " " + rest
+    }
+
     /// メニューの見出し
     var group: String {
         switch self {

@@ -79,6 +79,19 @@ enum CameraParameters {
         return refinement
     }
 
+    // MARK: - アールイーカメラ
+
+    /// ctglyid：カメラ・光学機器=1001_1 > デジタルカメラ=4_2 / レンズ=407_2 / フィルムカメラ=480_2。
+    /// アールイーカメラはカメラ専門店なので、検索ページでもカメラ・光学機器全体で探す
+    static func reCameraCategory(category: CameraCategory) -> String {
+        switch category {
+        case .all: return "1001_1"
+        case .digital: return "4_2"
+        case .lens: return "407_2"
+        case .film: return "480_2"
+        }
+    }
+
     // MARK: - 楽天市場
 
     /// ジャンル：カメラ・ビデオカメラ・光学機器=100212 >

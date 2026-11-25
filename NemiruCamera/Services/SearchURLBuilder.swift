@@ -14,6 +14,10 @@ import Foundation
 /// - カメラのキタムラ: /ec/list?keyword=、type=u で中古、sort=price_asc / price_desc / update_date（カメラページのみ）
 /// - フジヤカメラ: /shop/goods/search.aspx?keyword=、category=20 で中古、sort=1 / 4 / 5（カメラページのみ）
 /// - カメラのナニワ: キーワード（pb_keyword）は Shift_JIS、pb_salestype=2 で中古、sort=3 / 2 / 1（カメラページのみ）
+/// - アールイーカメラ: /category/?searchword=、ctglyid で種類、stids5=5 で中古、sort=1 / 2 / 3。
+///   商品名のメーカーはカタカナ表記なので、メーカー名をカタカナにして送る（カメラページのみ）
+/// - ONE SCENE: /items?q=、state=on_sale / sold_out、order=price_low / price_high / hot。
+///   カテゴリは複数指定できず、フィルムカメラの分類もないので指定しない。「-ワード」を送ると0件になるので除外ワードは送らない（カメラページのみ）
 ///
 /// カメラページの種類（カテゴリ）・中古品のみは CameraParameters を参照
 /// （ヤフオクはカメラページではアプリ内ブラウザで Web 版を開く）。
@@ -62,6 +66,10 @@ struct SearchURLBuilder {
             return buildFujiyaURL(query)
         case .naniwa:
             return buildNaniwaURL(query)
+        case .reCamera:
+            return buildReCameraURL(query)
+        case .oneScene:
+            return buildOneSceneURL(query)
         }
     }
 
@@ -99,7 +107,10 @@ struct SearchURLBuilder {
         let usedOnly: Bool
 
         init(filter: SearchFilterState, context: SearchContext, service: MarketplaceService) {
-            var keyword = filter.parsedKeyword
+            // アールイーカメラは商品名のメーカーがカタカナ（「ニコン Z6」）なので、先頭のメーカー名をカタカナにする
+            var keyword = service == .reCamera
+                ? ParsedKeyword(CameraMaker.katakanaKeyword(filter.keyword))
+                : filter.parsedKeyword
             // 種類・中古品のみ・ジャンク除外はカメラページのものだけ使う
             let isCameraPage = context.scope == .camera
             category = isCameraPage ? filter.cameraCategory : .all
@@ -593,5 +604,64 @@ struct SearchURLBuilder {
         }
 
         return URL(string: url)
+    }
+
+    // MARK: - アールイーカメラ
+
+    private static func buildReCameraURL(_ query: Query) -> URL? {
+        var components = URLComponents(string: "https://re-camera-shop.com/category/")
+        var items = [
+            URLQueryItem(name: "searchword", value: query.keywordText(for: .unsupported)),
+            URLQueryItem(name: "ctglyid", value: CameraParameters.reCameraCategory(category: query.category))
+        ]
+
+        // 中古品のチェック
+        if query.usedOnly {
+            items.append(URLQueryItem(name: "stids5", value: "5"))
+        }
+
+        switch query.sortOption {
+        case .priceAsc:
+            items.append(URLQueryItem(name: "sort", value: "1"))
+        case .priceDesc:
+            items.append(URLQueryItem(name: "sort", value: "2"))
+        case .newest:
+            items.append(URLQueryItem(name: "sort", value: "3"))
+        case .recommended:
+            break // サイトの初期設定
+        }
+
+        components?.queryItems = items
+        return makeURL(components)
+    }
+
+    // MARK: - ONE SCENE
+
+    private static func buildOneSceneURL(_ query: Query) -> URL? {
+        var components = URLComponents(string: "https://one-scene.com/items")
+        var items = [URLQueryItem(name: "q", value: query.keywordText(for: .unsupported))]
+
+        switch query.saleStatus {
+        case .onSale:
+            items.append(URLQueryItem(name: "state", value: "on_sale"))
+        case .soldOut:
+            items.append(URLQueryItem(name: "state", value: "sold_out"))
+        case .all:
+            break // 販売中と売り切れの両方（サイトの初期設定）
+        }
+
+        switch query.sortOption {
+        case .priceAsc:
+            items.append(URLQueryItem(name: "order", value: "price_low"))
+        case .priceDesc:
+            items.append(URLQueryItem(name: "order", value: "price_high"))
+        case .recommended:
+            items.append(URLQueryItem(name: "order", value: "hot")) // 注目順
+        case .newest:
+            break // 新着順（サイトの初期設定）
+        }
+
+        components?.queryItems = items
+        return makeURL(components)
     }
 }
