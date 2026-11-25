@@ -31,6 +31,7 @@ No login, demo account, or sample files are needed.
 4. EXTERNAL SERVICES USED
 - openBD (https://api.openbd.jp): when an ISBN barcode is scanned, only the ISBN is sent to look up the book title. No personal data is sent.
 - Websites opened via search URL (Safari View Controller): Mercari, Rakuma, Yahoo! Flea Market, Yahoo! Auctions, Amazon.co.jp, Rakuten Ichiba, Yodobashi Camera, BicCamera, Map Camera, Camera no Kitamura, Fujiya Camera, Camera no Naniwa, RE Camera, ONE SCENE. The app only opens public search pages; it does not use their APIs, log in on the user's behalf, or scrape their content.
+- Affiliate links: the search links for Mercari, Amazon.co.jp and Rakuten Ichiba carry the developer's affiliate IDs (Mercari Ambassador, Amazon Associates, Rakuten Affiliate). The developer may earn a commission on purchases made through them; prices are unchanged for the user. This is disclosed in the app's Settings tab, the App Store description and the privacy policy. No user data is collected or sent to the developer.
 - No analytics, advertising, authentication, payment, or AI services are used. No data is sent to the developer's servers. Search history, saved searches, and settings are stored only on the device.
 
 5. REGIONAL DIFFERENCES
